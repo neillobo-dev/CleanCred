@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanCred — Get credit for cleaning up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E9E7DD;
+    --panel: #F5F4EE;
+    --ink: #1B2420;
+    --ink-soft: #4B564F;
+    --forest: #1F5A3C;
+    --forest-dark: #163F2A;
+    --moss: #6B8F71;
+    --signal: #E8A227;
+    --signal-dark: #B87C15;
+    --clay: #C4573B;
+    --line: #CFCABE;
+    --white: #FFFFFF;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:900;
+    line-height:0.98;
+    letter-spacing:0.2px;
+    margin:0;
+    color:var(--forest-dark);
+  }
+  p{margin:0 0 12px 0;}
+  a{color:inherit;}
+  button, input, textarea, select{font-family:inherit; font-size:1rem;}
+  ::selection{background:var(--signal); color:var(--ink);}
+  :focus-visible{outline:3px solid var(--signal); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---- Shell ---- */
+  #app{min-height:100vh; display:flex; flex-direction:column;}
+
+  header.topbar{
+    background:var(--forest);
+    color:var(--white);
+    border-bottom:4px solid var(--signal);
+    position:sticky; top:0; z-index:40;
+  }
+  .topbar-inner{
+    max-width:1080px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px;
+  }
+  .logo{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    letter-spacing:0.5px;
+    display:flex; align-items:center; gap:8px;
+    cursor:pointer; background:none; border:none; color:var(--white); padding:0;
+  }
+  .logo .mark{
+    width:12px;height:12px; background:var(--signal); display:inline-block; transform:rotate(45deg);
+  }
+  .navtoggle{
+    background:transparent; border:2px solid rgba(255,255,255,0.5); color:var(--white);
+    padding:8px 14px; border-radius:var(--radius); cursor:pointer;
+    font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .navtoggle:hover{border-color:var(--white);}
+
+  nav.navpanel{
+    display:none;
+    background:var(--forest-dark);
+    border-bottom:1px solid rgba(255,255,255,0.15);
+  }
+  nav.navpanel.open{display:block;}
+  .navpanel-inner{
+    max-width:1080px; margin:0 auto; padding:10px 20px 18px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:4px;
+  }
+  .navlink{
+    text-align:left; background:none; border:none; color:rgba(255,255,255,0.85);
+    padding:12px 10px; font-size:1.02rem; font-weight:600; cursor:pointer;
+    border-left:3px solid transparent; display:flex; flex-direction:column; gap:2px;
+  }
+  .navlink small{font-weight:400; color:rgba(255,255,255,0.55); font-size:0.78rem;}
+  .navlink:hover{background:rgba(255,255,255,0.06); border-left-color:var(--signal);}
+  .navlink.active{border-left-color:var(--signal); color:var(--white); background:rgba(255,255,255,0.08);}
+
+  main{flex:1; width:100%;}
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 20px 60px;}
+  .wrap.narrow{max-width:680px;}
+
+  footer.site{
+    border-top:1px solid var(--line); padding:22px 20px; text-align:center;
+    color:var(--ink-soft); font-size:0.84rem; background:var(--panel);
+  }
+  footer.site strong{color:var(--ink);}
+
+  /* ---- Generic bits ---- */
+  .eyebrow{ color:var(--moss); font-weight:600; font-size:0.92rem; margin-bottom:6px; }
+  .section{margin-bottom:52px;}
+  .section:last-child{margin-bottom:0;}
+  .rule{border:none; border-top:1px solid var(--line); margin:36px 0;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:2px solid var(--forest); background:var(--forest); color:var(--white);
+    padding:12px 22px; font-weight:700; border-radius:var(--radius); cursor:pointer;
+    font-size:1rem;
+  }
+  .btn:hover{background:var(--forest-dark); border-color:var(--forest-dark);}
+  .btn.secondary{background:transparent; color:var(--forest); }
+  .btn.secondary:hover{background:rgba(31,90,60,0.08);}
+  .btn.signal{background:var(--signal); border-color:var(--signal); color:var(--ink);}
+  .btn.signal:hover{background:var(--signal-dark); border-color:var(--signal-dark); color:var(--white);}
+  .btn.clay{background:var(--clay); border-color:var(--clay); color:var(--white);}
+  .btn.clay:hover{background:#a3452e; border-color:#a3452e;}
+  .btn:disabled{opacity:0.45; cursor:not-allowed;}
+  .btn.block{width:100%;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); padding:22px; border-radius:var(--radius);
+  }
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-weight:600; margin-bottom:6px; font-size:0.92rem;}
+  .field input, .field textarea{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:var(--radius);
+    background:var(--white); color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{border-color:var(--forest);}
+  .hint{font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+
+  .banner{padding:14px 16px; border-radius:var(--radius); font-size:0.92rem; margin-bottom:18px; border:1.5px solid;}
+  .banner.ok{background:#EAF3EC; border-color:var(--forest); color:var(--forest-dark);}
+  .banner.warn{background:#FBEFE3; border-color:var(--signal-dark); color:#7A4F0E;}
+  .banner.err{background:#F8E9E5; border-color:var(--clay); color:#7A2E1B;}
+
+  .steps{display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:20px 0; border-top:1px solid var(--line);}
+  .step:first-child{border-top:none;}
+  .stepnum{
+    font-family:'Barlow Condensed', sans-serif; font-weight:900; font-size:2.2rem; color:var(--moss);
+    min-width:46px;
+  }
+
+  /* mission */
+  .hero{padding-top:10px;}
+  .hero h1{font-size:clamp(2.6rem, 7vw, 4.6rem);}
+  .hero .lede{font-size:1.15rem; max-width:640px; color:var(--ink-soft); margin-top:16px;}
+  .hero-actions{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap;}
+  .statrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:8px;}
+  .stat{background:var(--panel); padding:18px;}
+  .stat .num{font-family:'Barlow Condensed'; font-weight:900; font-size:2.4rem; color:var(--forest); line-height:1;}
+  .stat .lab{font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+
+  /* record page */
+  .camwrap{background:#0E1512; border-radius:var(--radius); overflow:hidden; position:relative; aspect-ratio:4/3; max-width:480px;}
+  .camwrap video{width:100%; height:100%; object-fit:cover; display:block;}
+  .recdot{position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:6px; color:#fff; font-size:0.82rem; font-weight:700; background:rgba(0,0,0,0.4); padding:4px 9px; border-radius:20px;}
+  .recdot .dot{width:9px;height:9px;border-radius:50%; background:var(--clay);}
+
+  .spotlist{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
+  .spotitem{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); font-size:0.92rem;}
+  .spotitem .dist{color:var(--ink-soft); font-size:0.82rem;}
+
+  /* dashboard */
+  .credittag{
+    display:inline-flex; align-items:baseline; gap:8px; background:var(--forest); color:var(--white);
+    padding:16px 22px; border-radius:var(--radius);
+  }
+  .credittag .num{font-family:'Barlow Condensed'; font-weight:900; font-size:3rem; color:var(--signal);}
+  .credittag .lab{font-size:0.9rem;}
+  .histlist{margin-top:8px;}
+  .histrow{display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--line); font-size:0.92rem;}
+  .histrow:first-child{border-top:none;}
+  .histrow .amt.plus{color:var(--forest); font-weight:700;}
+  .histrow .amt.minus{color:var(--clay); font-weight:700;}
+  .histrow .when{color:var(--ink-soft); font-size:0.8rem;}
+
+  /* business grid */
+  .bizgrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; margin-top:10px;}
+  .bizcard{background:var(--white); border:1px solid var(--line); padding:18px; border-radius:var(--radius); display:flex; flex-direction:column; gap:8px;}
+  .bizcard .emoji{font-size:1.8rem;}
+  .bizcard .name{font-weight:700; font-size:1.05rem;}
+  .bizcard .cat{color:var(--moss); font-size:0.8rem; font-weight:600;}
+  .bizcard .offer{font-size:0.9rem; color:var(--ink-soft); flex:1;}
+  .bizcard .cost{font-weight:700; color:var(--forest-dark);}
+
+  .amtgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;}
+  .amtbtn{padding:14px 6px; border:2px solid var(--line); background:var(--white); border-radius:var(--radius); font-weight:700; cursor:pointer; text-align:center;}
+  .amtbtn.sel{border-color:var(--signal); background:#FBF1DD;}
+
+  .badge{display:inline-block; background:var(--signal); color:var(--ink); font-weight:700; font-size:0.72rem; padding:3px 8px; border-radius:20px;}
+
+  /* learn: game hub */
+  .gamegrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; margin-top:10px;}
+  .gamecard{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:20px; display:flex; flex-direction:column; gap:8px;}
+  .gamecard .gicon{font-size:2rem;}
+  .gamecard .gtitle{font-weight:700; font-size:1.08rem; color:var(--forest-dark);}
+  .gamecard .gblurb{font-size:0.88rem; color:var(--ink-soft); flex:1;}
+  .gamecard .greward{font-weight:700; font-size:0.8rem; color:var(--forest);}
+  .gamecard.soon{opacity:0.62;}
+  .gamecard.soon .greward{color:var(--ink-soft);}
+
+  /* learn: sort-it-right game */
+  .itemcard{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:34px 20px; text-align:center; max-width:340px; margin-top:14px;}
+  .itemcard .em{font-size:3.2rem; line-height:1;}
+  .itemcard .nm{font-weight:700; font-size:1.15rem; margin-top:10px; color:var(--forest-dark);}
+  .binrow{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:520px; margin-top:16px;}
+  .binbtn{border:2px solid var(--line); background:var(--white); border-radius:var(--radius); padding:16px 6px; cursor:pointer; text-align:center; font-weight:700; display:flex; flex-direction:column; gap:3px; color:var(--ink);}
+  .binbtn small{font-weight:400; color:var(--ink-soft); font-size:0.74rem;}
+  .binbtn.wet{border-color:var(--forest);}
+  .binbtn.wet:hover{background:#EAF3EC;}
+  .binbtn.dry{border-color:var(--signal-dark);}
+  .binbtn.dry:hover{background:#FBF1DD;}
+  .binbtn.hazard{border-color:var(--clay);}
+  .binbtn.hazard:hover{background:#F8E9E5;}
+
+  /* learn: quiz game */
+  .quizopt{display:block; width:100%; text-align:left; padding:14px 16px; border:1.5px solid var(--line); border-radius:var(--radius); background:var(--white); font-weight:600; cursor:pointer; margin-bottom:10px; color:var(--ink);}
+  .quizopt:hover{border-color:var(--forest);}
+
+  /* watch & earn */
+  .vidgrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:18px; margin-top:10px;}
+  .vidcard{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;}
+  .vidframe-wrap{position:relative; width:100%; padding-bottom:56.25%; background:#0E1512;}
+  .vidframe-inner{position:absolute; inset:0; width:100%; height:100%;}
+  .vidframe-inner iframe{position:absolute; inset:0; width:100% !important; height:100% !important; border:0;}
+  .vidbody{padding:16px; display:flex; flex-direction:column; gap:6px; flex:1;}
+  .vidtitle{font-weight:700; font-size:1rem; color:var(--forest-dark);}
+  .vidsource{font-size:0.78rem; color:var(--moss); font-weight:600;}
+  .vidblurb{font-size:0.86rem; color:var(--ink-soft); flex:1; margin:0;}
+
+  /* donor ticker */
+  .donorticker{overflow:hidden; background:var(--forest-dark); border-radius:var(--radius); margin:18px 0 4px; position:relative;}
+  .donorticker::before, .donorticker::after{content:''; position:absolute; top:0; bottom:0; width:36px; z-index:2; pointer-events:none;}
+  .donorticker::before{left:0; background:linear-gradient(90deg, var(--forest-dark), transparent);}
+  .donorticker::after{right:0; background:linear-gradient(270deg, var(--forest-dark), transparent);}
+  .donorticker-track{display:inline-flex; white-space:nowrap; padding:10px 0; animation:tickerScroll 26s linear infinite;}
+  .donorticker-track:hover{animation-play-state:paused;}
+  .donor-item{display:inline-flex; align-items:center; gap:8px; color:var(--white); font-size:0.86rem; font-weight:600; padding:0 26px; border-right:1px solid rgba(255,255,255,0.15); white-space:nowrap;}
+  .donor-item .dot-live{width:7px; height:7px; border-radius:50%; background:var(--signal); flex:none; box-shadow:0 0 0 3px rgba(232,162,39,0.25);}
+  @keyframes tickerScroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* leaderboard */
+  .lbpicker{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:2px 0 16px;}
+  .lbgrid{display:grid; grid-template-columns:1fr; gap:30px; margin-top:6px;}
+  @media (min-width:820px){ .lbgrid{grid-template-columns:1fr 1fr;} }
+  .lbtable{width:100%; border-collapse:collapse; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  .lbtable th{background:var(--forest); color:var(--white); text-align:left; padding:10px 12px; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;}
+  .lbtable td{padding:10px 12px; border-top:1px solid var(--line); font-size:0.92rem;}
+  .lbtable tr.me{background:#FBF1DD;}
+  .lbrank{font-family:'Barlow Condensed'; font-weight:900; color:var(--moss); font-size:1.15rem;}
+  .lbname{font-weight:700;}
+  .lbcredits{font-weight:700; color:var(--forest-dark); text-align:right;}
+
+  /* plantation events */
+  .eventgrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:16px; margin-top:14px;}
+  .eventcard{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px; display:flex; flex-direction:column; gap:7px;}
+  .eventcard .edate{color:var(--signal-dark); font-weight:700; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.3px;}
+  .eventcard .etitle{font-family:'Barlow Condensed'; font-weight:900; font-size:1.32rem; color:var(--forest-dark);}
+  .eventcard .eloc{color:var(--ink-soft); font-size:0.86rem;}
+  .eventcard .edesc{font-size:0.88rem; color:var(--ink-soft); flex:1; margin:0;}
+  .eventcard .ereward{font-weight:700; color:var(--forest); font-size:0.85rem;}
+  .eventcard .eattend{font-size:0.76rem; color:var(--moss); font-weight:600;}
+
+  .field select{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:var(--radius);
+    background:var(--white); color:var(--ink);
+  }
+  .field select:focus{border-color:var(--forest);}
+
+  @media (min-width: 720px){
+    .navpanel-inner{grid-template-columns:repeat(4, 1fr);}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="logo" id="logoBtn" aria-label="CleanCred home"><span class="mark"></span>CleanCred</button>
+      <button class="navtoggle" id="navToggle" aria-expanded="false">
+        <span id="navToggleLabel">Menu</span>
+      </button>
+    </div>
+  </header>
+  <nav class="navpanel" id="navPanel">
+    <div class="navpanel-inner" id="navPanelInner"></div>
+  </nav>
+  <main>
+    <div class="wrap" id="content"></div>
+  </main>
+  <footer class="site">
+    <strong>CleanCred</strong> is a preview built for this conversation — credits, coupons and donations shown here are simulated on your device and no real payments are processed. Camera capture and location checks use your browser's live permissions.
+  </footer>
+</div>
+
+<script>
+/* ---------------- storage helpers ---------------- */
+const mem = {}; // in-session fallback if window.storage is unavailable
+async function loadData(key, shared, fallback){
+  try{
+    const r = await window.storage.get(key, shared);
+    return r ? JSON.parse(r.value) : fallback;
+  }catch(e){ return (key in mem) ? mem[key] : fallback; }
+}
+async function saveData(key, shared, value){
+  mem[key] = value;
+  try{ await window.storage.set(key, JSON.stringify(value), shared); }catch(e){ /* session-only */ }
+}
+
+/* ---------------- state ---------------- */
+const state = {
+  view: 'mission',
+  profiles: {},        // personal (per-device): { username: {credits, history:[], homeState, plantedEvents:[]} }
+  currentUser: null,
+  spots: { approved: [] },     // shared
+  businesses: [],              // shared
+  partnerApps: [],             // shared
+  donations: [],                // shared
+  events: [],                   // shared: upcoming plantation drives
+  leaderboard: {},               // shared: username -> {name, homeState, credits}
+  lbSelectedState: '',           // which state the leaderboard picker currently shows
+  record: { verifiedSpot:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false },
+  plantCapture: { eventId:null, verifiedEvent:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false },
+  activeGame: null,            // null | 'sort' | 'quiz'
+  sortGame: null,
+  quizGame: null
+};
+const ytPlayers = {}; // videoId -> YT.Player instance, learn/watch section
+let pollTimer = null; // live-refresh interval for the mission ticker / leaderboard
+
+const DEFAULT_SPOTS = [
+  { id:'s1', name:'Hampankatta municipal bin cluster', lat:12.8698, lng:74.8420, radius:120, source:'seed' },
+  { id:'s2', name:'Kadri Park waste collection point', lat:12.8990, lng:74.8480, radius:120, source:'seed' },
+  { id:'s3', name:'Mangaladevi Temple road dumpster', lat:12.8650, lng:74.8410, radius:120, source:'seed' },
+  { id:'s4', name:'Surathkal beach road bin', lat:13.0100, lng:74.7930, radius:150, source:'seed' }
+];
+const DEFAULT_BUSINESSES = [
+  { id:'b1', name:'Green Leaf Cafe', cat:'Food & drink', emoji:'☕', offer:'Free filter coffee with any snack', cost:40 },
+  { id:'b2', name:'Coastal Cycles', cat:'Retail', emoji:'🚲', offer:'10% off bike servicing', cost:60 },
+  { id:'b3', name:'Bloom Grocers', cat:'Groceries', emoji:'🥬', offer:'₹50 off a ₹300+ bill', cost:70 },
+  { id:'b4', name:'Sunder Laundry', cat:'Services', emoji:'🧺', offer:'One free wash & fold load', cost:50 },
+  { id:'b5', name:'Pageturner Books', cat:'Retail', emoji:'📚', offer:'₹100 off any paperback', cost:90 },
+  { id:'b6', name:'FitBox Gym', cat:'Fitness', emoji:'🏋️', offer:'One free guest session', cost:80 }
+];
+const DEFAULT_EVENTS = [
+  { id:'e1', title:'Kadri Hill sapling drive', location:'Kadri Park, Mangaluru', lat:12.8990, lng:74.8480, radius:150,
+    dateISO:'2026-09-20T07:30:00', creditReward:80,
+    description:'Community planting of native saplings along the park trail. Bring gloves if you have them.', attendees:[] },
+  { id:'e2', title:'Netravati riverside greening', location:'Netravati river bank, Bantwal Road', lat:12.8500, lng:74.8700, radius:150,
+    dateISO:'2026-10-04T07:00:00', creditReward:100,
+    description:'Riverbank stabilisation planting with the local forest department.', attendees:[] },
+  { id:'e3', title:'Surathkal beach dune planting', location:'Surathkal beach road', lat:13.0100, lng:74.7930, radius:150,
+    dateISO:'2026-10-18T07:00:00', creditReward:90,
+    description:'Planting dune grass and casuarina saplings to reduce coastal erosion.', attendees:[] }
+];
+
+const NAV = [
+  { id:'mission', label:'Our mission', sub:'Why CleanCred exists' },
+  { id:'record', label:'Record & earn', sub:'Log a verified drop' },
+  { id:'plant', label:'Plant a sapling', sub:'Upcoming plantation drives' },
+  { id:'learn', label:'Learn & play', sub:'Games that teach sorting' },
+  { id:'watch', label:'Watch & earn', sub:'Videos on clean habits' },
+  { id:'leaderboard', label:'Leaderboard', sub:'National & state rankings' },
+  { id:'account', label:'My account', sub:'Credits & history' },
+  { id:'request-spot', label:'Request a spot', sub:'Add a dumping point' },
+  { id:'businesses', label:'Redeem credits', sub:'Partnered businesses' },
+  { id:'partner', label:'Partner with us', sub:'For businesses' },
+  { id:'donate', label:'Support us', sub:'Keep it running' }
+];
+
+/* ---------------- India states/UTs, for leaderboard + home-state selection ---------------- */
+const INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana',
+  'Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram',
+  'Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand',
+  'West Bengal','Andaman and Nicobar Islands','Chandigarh','Dadra and Nagar Haveli and Daman and Diu','Delhi',
+  'Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+
+/* ---------------- learn: content data ---------------- */
+const BIN_META = {
+  wet: { label:'Wet waste', sub:'Biodegradable' },
+  dry: { label:'Dry waste', sub:'Recyclable' },
+  hazard: { label:'Hazardous', sub:'Special handling' }
+};
+const SORT_ITEMS = [
+  { name:'Banana peel', emoji:'🍌', bin:'wet' },
+  { name:'Used tea leaves', emoji:'🍵', bin:'wet' },
+  { name:'Vegetable peels', emoji:'🥕', bin:'wet' },
+  { name:'Eggshells', emoji:'🥚', bin:'wet' },
+  { name:'Leftover rice', emoji:'🍚', bin:'wet' },
+  { name:'Orange rind', emoji:'🍊', bin:'wet' },
+  { name:'Newspaper', emoji:'📰', bin:'dry' },
+  { name:'Plastic bottle', emoji:'🧴', bin:'dry' },
+  { name:'Glass bottle', emoji:'🍾', bin:'dry' },
+  { name:'Cardboard box', emoji:'📦', bin:'dry' },
+  { name:'Aluminium can', emoji:'🥫', bin:'dry' },
+  { name:'Old magazine', emoji:'📖', bin:'dry' },
+  { name:'Dead battery', emoji:'🔋', bin:'hazard' },
+  { name:'Broken CFL bulb', emoji:'💡', bin:'hazard' },
+  { name:'Expired medicine strip', emoji:'💊', bin:'hazard' },
+  { name:'Old paint can', emoji:'🎨', bin:'hazard' },
+  { name:'Broken thermometer', emoji:'🌡️', bin:'hazard' },
+  { name:'Old mobile phone', emoji:'📱', bin:'hazard' }
+];
+const QUIZ_QUESTIONS = [
+  { q:'Which bin does a used tea bag belong in?', options:['Wet waste','Dry waste','Hazardous'], answer:0 },
+  { q:'What do the letters in "3R" stand for?', options:['Reduce, Reuse, Recycle','Return, Repair, Reuse','Recycle, Repurpose, Renew'], answer:0 },
+  { q:'Which of these needs hazardous-waste disposal, not the regular bin?', options:['Banana peel','Used battery','Newspaper'], answer:1 },
+  { q:'Composting mainly turns food scraps into...', options:['Fuel','Nutrient-rich soil','Drinking water'], answer:1 },
+  { q:'True or false: every type of plastic can be recycled.', options:['True','False'], answer:1 },
+  { q:'Which waste type breaks down naturally within weeks?', options:['Wet / biodegradable waste','Dry / recyclable waste','E-waste'], answer:0 },
+  { q:'A broken glass bottle should go in the...', options:['Wet waste bin','Dry waste bin, wrapped safely','Hazardous bin'], answer:1 },
+  { q:"Why does sorting waste at home actually matter?", options:['It makes recycling and composting far more effective','It has no effect once collected','It only matters for hazardous items'], answer:0 }
+];
+const LEARN_VIDEOS = [
+  { id:'b7GMpjx2jDQ', title:'How Recycling Works', source:'SciShow', credits:15, blurb:"What actually happens after your recyclables leave the bin, from sorting facility to new product." },
+  { id:'cBkBwVFFEWw', title:'How Compost Is Made', source:'Recycle Now', credits:15, blurb:'A short animation walking through how food and garden waste turns into usable compost.' },
+  { id:'0ZiD_Lb3Tm0', title:'Why Waste Segregation Is Important', source:'The Planet Voice', credits:15, blurb:'The case for splitting waste into organic, recyclable and hazardous before it gets collected.' },
+  { id:'ouciXfyt5BU', title:"The 5R's of Waste Management", source:'Kids Play', credits:10, blurb:'Refuse, reduce, reuse, repurpose, recycle: the five habits behind less landfill waste.' }
+];
+
+/* ---------------- utilities ---------------- */
+function haversineMeters(lat1,lng1,lat2,lng2){
+  const R=6371000;
+  const toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function fmtDate(iso){
+  try{ return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; }
+}
+function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function currentProfile(){ return state.currentUser ? state.profiles[state.currentUser] : null; }
+async function persistProfiles(){
+  await saveData('profiles', false, state.profiles);
+  await syncLeaderboard();
+}
+
+/* ---------------- init ---------------- */
+async function init(){
+  state.profiles = await loadData('profiles', false, {});
+  const spots = await loadData('spots-db', true, null);
+  state.spots.approved = spots && spots.approved ? spots.approved : DEFAULT_SPOTS.slice();
+  if(!spots) await saveData('spots-db', true, state.spots);
+
+  const bizs = await loadData('businesses-db', true, null);
+  state.businesses = bizs || DEFAULT_BUSINESSES.slice();
+  if(!bizs) await saveData('businesses-db', true, state.businesses);
+
+  state.partnerApps = await loadData('partner-applications', true, []);
+  state.donations = await loadData('donations-log', true, []);
+
+  const evs = await loadData('events-db', true, null);
+  state.events = evs || DEFAULT_EVENTS.slice();
+  if(!evs) await saveData('events-db', true, state.events);
+
+  state.leaderboard = await loadData('leaderboard-db', true, {});
+
+  buildNav();
+  render();
+}
+
+function buildNav(){
+  const wrap = document.getElementById('navPanelInner');
+  wrap.innerHTML = NAV.map(n => `
+    <button class="navlink" data-view="${n.id}">
+      ${esc(n.label)}
+      <small>${esc(n.sub)}</small>
+    </button>
+  `).join('');
+  wrap.querySelectorAll('.navlink').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      setView(btn.dataset.view);
+      closeNav();
+    });
+  });
+}
+function setView(v){
+  stopCamera();
+  stopPlantCamera();
+  stopPoll();
+  if(v !== 'learn') state.activeGame = null;
+  state.view = v;
+  render();
+  window.scrollTo({top:0, behavior:'auto'});
+}
+function stopPoll(){
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+function closeNav(){
+  document.getElementById('navPanel').classList.remove('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','false');
+}
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  const p = document.getElementById('navPanel');
+  const open = p.classList.toggle('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded', open ? 'true':'false');
+});
+document.getElementById('logoBtn').addEventListener('click', ()=> { setView('mission'); closeNav(); });
+
+/* ---------------- render router ---------------- */
+function render(){
+  document.querySelectorAll('.navlink').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === state.view);
+  });
+  const c = document.getElementById('content');
+  const views = {
+    mission: viewMission,
+    record: viewRecord,
+    plant: viewPlant,
+    learn: viewLearn,
+    watch: viewWatch,
+    leaderboard: viewLeaderboard,
+    account: viewAccount,
+    'request-spot': viewRequestSpot,
+    businesses: viewBusinesses,
+    partner: viewPartner,
+    donate: viewDonate
+  };
+  c.innerHTML = (views[state.view] || viewMission)();
+  bindView(state.view);
+}
+
+/* ================= MISSION ================= */
+function viewMission(){
+  return `
+  <section class="hero section">
+    <div class="eyebrow">The problem in our streets</div>
+    <h1>Trash doesn't clean<br>itself up.</h1>
+    <p class="lede">A major problem right now is trash thrown randomly around our locality. We started CleanCred to reward people for throwing trash where it belongs — because a once-a-month cleaning drive can't do what daily habits can.</p>
+
+    <div class="donorticker" id="donorTicker" aria-label="Live donor and sapling activity">
+      <div class="donorticker-track" id="donorTickerTrack"></div>
+    </div>
+
+    <div class="hero-actions">
+      <button class="btn signal" data-go="record">Record a drop, earn credits</button>
+      <button class="btn secondary" data-go="plant">Plant a sapling</button>
+      <button class="btn secondary" data-go="leaderboard">See the leaderboard</button>
+      <button class="btn secondary" data-go="businesses">See what credits are worth</button>
+    </div>
+    <div class="statrow">
+      <div class="stat"><div class="num">${state.spots.approved.length}</div><div class="lab">verified dumping spots</div></div>
+      <div class="stat"><div class="num">${state.businesses.length}</div><div class="lab">partnered businesses</div></div>
+      <div class="stat"><div class="num">${Object.keys(state.profiles).length}</div><div class="lab">people earning on this device</div></div>
+      <div class="stat"><div class="num">${state.donations.length}</div><div class="lab">donations received</div></div>
+      <div class="stat"><div class="num">${state.events.reduce((n,e)=>n+((e.attendees||[]).length),0)}</div><div class="lab">saplings captured</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 style="font-size:1.8rem; margin-bottom:18px;">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="stepnum">01</div>
+        <div><strong>Stand at a verified spot.</strong><p class="hint" style="margin-top:6px;">CleanCred checks your device's location against our list of approved dumpsters and bins, so credit only goes to real drops at real spots. Don't see one nearby? Add it from the "Request a spot" page.</p></div>
+      </div>
+      <div class="step">
+        <div class="stepnum">02</div>
+        <div><strong>Record yourself, live.</strong><p class="hint" style="margin-top:6px;">You film the drop right in the app using your camera. There's no upload button — we don't accept photos or clips from your gallery, so old or borrowed footage can't be claimed for credit.</p></div>
+      </div>
+      <div class="step">
+        <div class="stepnum">03</div>
+        <div><strong>Spend your credits nearby.</strong><p class="hint" style="margin-top:6px;">Redeem what you earn for coupons at cafes, shops and services that have partnered with CleanCred in your area.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section card">
+    <h3 style="font-size:1.3rem; margin-bottom:10px;">Two more ways to earn</h3>
+    <p style="color:var(--ink-soft); margin:0;">Can't get to a bin right now? Sharpen your sorting in <strong>Learn & play</strong>, or pick up credits by watching a short video in <strong>Watch & earn</strong>. Recording a verified drop still earns the most, but every bit adds up.</p>
+  </section>
+
+  <section class="section card">
+    <h3 style="font-size:1.3rem; margin-bottom:10px;">Why not just run more cleaning drives?</h3>
+    <p style="color:var(--ink-soft); margin:0;">Drives are organised, occasional, and depend on volunteers showing up. Litter happens every day, from everyone. CleanCred turns the everyday act of binning your trash properly into something that's tracked and rewarded, so good disposal habits get the same daily attention the litter does.</p>
+  </section>
+  `;
+}
+
+/* ---- mission: live donor / sapling ticker ---- */
+function buildDonorFeedItems(){
+  const items = [];
+  state.donations.forEach(d=>{
+    if(!d.date) return;
+    items.push({ date:d.date, text:`${esc(d.name||'Anonymous')} donated ₹${d.amount}` });
+  });
+  state.events.forEach(ev=>{
+    (ev.attendees||[]).forEach(a=>{
+      if(a && typeof a === 'object' && a.user && a.date){
+        items.push({ date:a.date, text:`${esc(a.user)} planted a sapling at ${esc(ev.title)}` });
+      }
+    });
+  });
+  items.sort((a,b)=> new Date(b.date) - new Date(a.date));
+  return items.slice(0,10);
+}
+function renderDonorTicker(){
+  const track = document.getElementById('donorTickerTrack');
+  if(!track) return;
+  const items = buildDonorFeedItems();
+  if(items.length===0){
+    track.innerHTML = `<span class="donor-item"><span class="dot-live"></span>Be the first to donate or plant a sapling — it'll show up here live.</span>`;
+    return;
+  }
+  const html = items.map(it=>`<span class="donor-item"><span class="dot-live"></span>${it.text}</span>`).join('');
+  track.innerHTML = html + html; // duplicated for a seamless scroll loop
+}
+function startMissionTicker(){
+  renderDonorTicker();
+  stopPoll();
+  pollTimer = setInterval(async ()=>{
+    state.donations = await loadData('donations-log', true, state.donations);
+    state.events = await loadData('events-db', true, state.events);
+    if(state.view==='mission') renderDonorTicker();
+  }, 7000);
+}
+
+/* ================= RECORD ================= */
+function viewRecord(){
+  const p = currentProfile();
+  if(!p){
+    return `
+    <section class="section wrap narrow" style="padding:0;">
+      <div class="eyebrow">Record & earn</div>
+      <h1 style="font-size:2.2rem;">Log in first</h1>
+      <p class="lede" style="margin-top:12px;">You'll need an account so we know whose credits to add to.</p>
+      <button class="btn signal" data-go="account" style="margin-top:8px;">Go to my account</button>
+    </section>`;
+  }
+  const r = state.record;
+  return `
+  <section class="section">
+    <div class="eyebrow">Step 1 of 2</div>
+    <h1 style="font-size:2.2rem;">Confirm you're at a valid spot</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">We check your device's live location against CleanCred's list of verified dumping spots. This runs on-device — nothing is guessed or typed in.</p>
+    <div id="locBanner">${r.verifiedSpot ? bannerVerified(r.verifiedSpot) : ''}</div>
+    <button class="btn ${r.verifiedSpot?'secondary':'signal'}" id="checkLocBtn" style="margin-top:6px;">${r.verifiedSpot ? 'Re-check location' : 'Check my location'}</button>
+  </section>
+
+  <hr class="rule">
+
+  <section class="section">
+    <div class="eyebrow">Step 2 of 2</div>
+    <h1 style="font-size:2.2rem;">Film the drop, live</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">${r.verifiedSpot ? 'Point your camera at the bin as you drop your trash in. Recording happens right here — there is no option to upload a file from your gallery.' : 'Verify your location above to unlock the camera.'}</p>
+
+    <div id="camArea" style="margin-top:16px;"></div>
+  </section>
+  `;
+}
+function bannerVerified(spot){
+  return `<div class="banner ok"><strong>Location verified</strong> — you're at <strong>${esc(spot.name)}</strong> (${Math.round(spot.dist)} m away). You're clear to record.</div>`;
+}
+
+function bindView(view){
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.addEventListener('click', ()=> setView(b.dataset.go));
+  });
+  if(view==='mission') startMissionTicker();
+  if(view==='record') bindRecord();
+  if(view==='plant') bindPlant();
+  if(view==='learn') bindLearn();
+  if(view==='watch') bindWatch();
+  if(view==='leaderboard'){ bindLeaderboard(); startLeaderboardPoll(); }
+  if(view==='account') bindAccount();
+  if(view==='request-spot') bindRequestSpot();
+  if(view==='businesses') bindBusinesses();
+  if(view==='partner') bindPartner();
+  if(view==='donate') bindDonate();
+}
+
+/* ---- record logic ---- */
+function bindRecord(){
+  const p = currentProfile();
+  if(!p) return;
+  const btn = document.getElementById('checkLocBtn');
+  if(btn) btn.addEventListener('click', checkLocation);
+  renderCamArea();
+}
+function checkLocation(){
+  const banner = document.getElementById('locBanner');
+  if(!navigator.geolocation){
+    banner.innerHTML = `<div class="banner err">Your browser doesn't support location services, so we can't verify a spot here.</div>`;
+    return;
+  }
+  banner.innerHTML = `<div class="banner warn">Getting your location…</div>`;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude, longitude} = pos.coords;
+    let best=null, bestDist=Infinity;
+    state.spots.approved.forEach(s=>{
+      const d = haversineMeters(latitude, longitude, s.lat, s.lng);
+      if(d < bestDist){ bestDist=d; best=s; }
+    });
+    if(best && bestDist <= best.radius){
+      state.record.verifiedSpot = {...best, dist:bestDist};
+      banner.innerHTML = bannerVerified(state.record.verifiedSpot);
+      document.getElementById('checkLocBtn').textContent = 'Re-check location';
+      document.getElementById('checkLocBtn').classList.remove('signal');
+      document.getElementById('checkLocBtn').classList.add('secondary');
+      renderCamArea();
+    } else {
+      state.record.verifiedSpot = null;
+      const nearestTxt = best ? ` The nearest one, ${esc(best.name)}, is ${Math.round(bestDist)} m away.` : '';
+      banner.innerHTML = `<div class="banner err"><strong>No verified spot here.</strong>${nearestTxt} Head to a listed spot, or add this location on the "Request a spot" page.</div>`;
+      renderCamArea();
+    }
+  }, err=>{
+    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(err.message)}). Location access needs to be allowed for CleanCred to verify a spot.</div>`;
+  }, {enableHighAccuracy:true, timeout:12000});
+}
+
+function renderCamArea(){
+  const area = document.getElementById('camArea');
+  if(!area) return;
+  const r = state.record;
+  if(!r.verifiedSpot){
+    area.innerHTML = `<p class="hint">Camera unlocks once your location is verified above.</p>`;
+    return;
+  }
+  if(r.blobUrl){
+    area.innerHTML = `
+      <div class="camwrap"><video src="${r.blobUrl}" controls playsinline></video></div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button class="btn signal" id="submitDropBtn">Submit for credits</button>
+        <button class="btn secondary" id="retakeBtn">Retake</button>
+      </div>
+    `;
+    document.getElementById('submitDropBtn').addEventListener('click', submitDrop);
+    document.getElementById('retakeBtn').addEventListener('click', ()=>{ r.blobUrl=null; renderCamArea(); });
+    return;
+  }
+  if(!r.stream){
+    area.innerHTML = `<button class="btn signal" id="openCamBtn">Turn on camera</button><p class="hint" style="margin-top:8px;">We'll ask your browser for camera permission. There is no file picker anywhere in this flow, by design.</p>`;
+    document.getElementById('openCamBtn').addEventListener('click', openCamera);
+    return;
+  }
+  area.innerHTML = `
+    <div class="camwrap">
+      <video id="liveVideo" autoplay muted playsinline></video>
+      ${r.recording ? `<div class="recdot"><span class="dot"></span>REC</div>` : ''}
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+      ${r.recording
+        ? `<button class="btn clay" id="stopRecBtn">Stop recording</button>`
+        : `<button class="btn signal" id="startRecBtn">Start recording</button>`}
+      <button class="btn secondary" id="closeCamBtn">Turn off camera</button>
+    </div>
+    <p class="hint" style="margin-top:8px;">Recording stops automatically after 8 seconds.</p>
+  `;
+  const v = document.getElementById('liveVideo');
+  v.srcObject = r.stream;
+  if(r.recording){
+    document.getElementById('stopRecBtn').addEventListener('click', stopRecording);
+  }else{
+    document.getElementById('startRecBtn').addEventListener('click', startRecording);
+  }
+  document.getElementById('closeCamBtn').addEventListener('click', ()=>{ stopCamera(); renderCamArea(); });
+}
+
+async function openCamera(){
+  const area = document.getElementById('camArea');
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    state.record.stream = stream;
+    renderCamArea();
+  }catch(e){
+    area.innerHTML = `<div class="banner err">Camera access was blocked or isn't available here (${esc(e.message)}). CleanCred only accepts live camera recordings, so without camera access we can't verify a drop.</div>
+    <button class="btn secondary" id="retryCamBtn" style="margin-top:10px;">Try again</button>`;
+    document.getElementById('retryCamBtn').addEventListener('click', openCamera);
+  }
+}
+function startRecording(){
+  const r = state.record;
+  if(!r.stream) return;
+  r.chunks = [];
+  let mime = 'video/webm';
+  if(!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime))){
+    mime = '';
+  }
+  try{
+    r.recorder = mime ? new MediaRecorder(r.stream, {mimeType:mime}) : new MediaRecorder(r.stream);
+  }catch(e){
+    r.recorder = new MediaRecorder(r.stream);
+  }
+  r.recorder.ondataavailable = ev=>{ if(ev.data && ev.data.size>0) r.chunks.push(ev.data); };
+  r.recorder.onstop = ()=>{
+    const blob = new Blob(r.chunks, {type: r.recorder.mimeType || 'video/webm'});
+    r.blobUrl = URL.createObjectURL(blob);
+    r.recording = false;
+    stopCamera(true);
+    renderCamArea();
+  };
+  r.recorder.start();
+  r.recording = true;
+  renderCamArea();
+  r._autoStop = setTimeout(()=>{ if(r.recording) stopRecording(); }, 8000);
+}
+function stopRecording(){
+  const r = state.record;
+  if(r._autoStop) clearTimeout(r._autoStop);
+  if(r.recorder && r.recorder.state !== 'inactive') r.recorder.stop();
+}
+function stopCamera(keepBlob){
+  const r = state.record;
+  if(r.stream){
+    r.stream.getTracks().forEach(t=>t.stop());
+  }
+  r.stream = null;
+  r.recorder = null;
+  r.recording = false;
+  if(!keepBlob){ /* keep blobUrl if we just finished recording */ }
+}
+async function submitDrop(){
+  const p = currentProfile();
+  if(!p) return;
+  const earned = 8 + Math.floor(Math.random()*8); // 8-15 credits
+  p.credits += earned;
+  p.history.unshift({ type:'earn', desc:`Verified drop at ${state.record.verifiedSpot.name}`, amount:earned, date:new Date().toISOString() });
+  await persistProfiles();
+  state.record.blobUrl = null;
+  state.record.verifiedSpot = null;
+  const area = document.getElementById('camArea');
+  area.innerHTML = `<div class="banner ok"><strong>+${earned} credits added.</strong> Nice work — check your account for the updated balance.</div>
+    <button class="btn signal" data-go="account" style="margin-top:10px;">View my account</button>`;
+  area.querySelector('[data-go]').addEventListener('click', ()=> setView('account'));
+  document.getElementById('locBanner').innerHTML='';
+  document.getElementById('checkLocBtn').textContent = 'Check my location';
+  document.getElementById('checkLocBtn').classList.add('signal');
+  document.getElementById('checkLocBtn').classList.remove('secondary');
+}
+
+/* ================= PLANT A SAPLING ================= */
+function fmtEventDate(iso){
+  try{ return new Date(iso).toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); }
+  catch(e){ return iso; }
+}
+function viewPlant(){
+  const p = currentProfile();
+  if(!p){
+    return `
+    <section class="section wrap narrow" style="padding:0;">
+      <div class="eyebrow">Plant a sapling</div>
+      <h1 style="font-size:2.2rem;">Log in first</h1>
+      <p class="lede" style="margin-top:12px;">You'll need an account so we know whose credits to add for showing up and planting.</p>
+      <button class="btn signal" data-go="account" style="margin-top:8px;">Go to my account</button>
+    </section>`;
+  }
+  const planted = p.plantedEvents || [];
+  const upcoming = state.events.slice().sort((a,b)=> new Date(a.dateISO) - new Date(b.dateISO));
+  const pc = state.plantCapture;
+  return `
+  <section class="section">
+    <div class="eyebrow">Upcoming plantation drives</div>
+    <h1 style="font-size:2.2rem;">Show up, plant a sapling, capture it live</h1>
+    <p class="lede" style="margin-top:10px; max-width:640px;">Join a drive near you. On the day, stand at the listed spot, check in with your location, then film yourself planting — same live-camera rules as Record &amp; earn, so credit only goes to people who actually turned up.</p>
+    <div class="eventgrid">
+      ${upcoming.map(ev=>{
+        const already = planted.includes(ev.id);
+        const isActive = pc.eventId === ev.id;
+        return `
+        <div class="eventcard">
+          <div class="edate">${fmtEventDate(ev.dateISO)}</div>
+          <div class="etitle">${esc(ev.title)}</div>
+          <div class="eloc">📍 ${esc(ev.location)}</div>
+          <p class="edesc">${esc(ev.description)}</p>
+          <div class="ereward">+${ev.creditReward} credits for a verified capture</div>
+          <div class="eattend">${(ev.attendees||[]).length} ${(ev.attendees||[]).length===1?'person has':'people have'} captured this drive</div>
+          ${already
+            ? `<button class="btn secondary" disabled>Already captured ✓</button>`
+            : isActive
+              ? `<button class="btn secondary" data-cancel-plant="${ev.id}">Cancel check-in</button>`
+              : `<button class="btn signal" data-start-plant="${ev.id}">Check in &amp; capture</button>`}
+        </div>
+        `;
+      }).join('')}
+    </div>
+    ${pc.eventId ? renderPlantCaptureFlow() : ''}
+  </section>
+  `;
+}
+function renderPlantCaptureFlow(){
+  const pc = state.plantCapture;
+  const ev = state.events.find(e=>e.id===pc.eventId);
+  if(!ev) return '';
+  return `
+  <hr class="rule">
+  <section class="section">
+    <div class="eyebrow">Capturing: ${esc(ev.title)}</div>
+    <h2 style="font-size:1.7rem;">Step 1 — confirm you're on site</h2>
+    <p class="lede" style="margin-top:8px; max-width:600px;">We check your device's live location against this drive's spot.</p>
+    <div id="plantLocBanner">${pc.verifiedEvent ? bannerPlantVerified(pc.verifiedEvent) : ''}</div>
+    <button class="btn ${pc.verifiedEvent?'secondary':'signal'}" id="checkPlantLocBtn" style="margin-top:6px;">${pc.verifiedEvent ? 'Re-check location' : 'Check my location'}</button>
+
+    <h2 style="font-size:1.7rem; margin-top:28px;">Step 2 — film the plant, live</h2>
+    <p class="lede" style="margin-top:8px; max-width:600px;">${pc.verifiedEvent ? "Point your camera at the sapling as you plant it. There's no upload option — only live recording counts." : 'Verify your location above to unlock the camera.'}</p>
+    <div id="plantCamArea" style="margin-top:16px;"></div>
+  </section>
+  `;
+}
+function bannerPlantVerified(ev){
+  return `<div class="banner ok"><strong>Location verified</strong> — you're at <strong>${esc(ev.location)}</strong>. You're clear to record.</div>`;
+}
+function bindPlant(){
+  document.querySelectorAll('[data-start-plant]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.plantCapture = { eventId:b.dataset.startPlant, verifiedEvent:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false };
+      render();
+    });
+  });
+  document.querySelectorAll('[data-cancel-plant]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      stopPlantCamera();
+      state.plantCapture = { eventId:null, verifiedEvent:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false };
+      render();
+    });
+  });
+  const locBtn = document.getElementById('checkPlantLocBtn');
+  if(locBtn) locBtn.addEventListener('click', checkPlantLocation);
+  if(state.plantCapture.eventId) renderPlantCamArea();
+}
+function checkPlantLocation(){
+  const banner = document.getElementById('plantLocBanner');
+  const ev = state.events.find(e=>e.id===state.plantCapture.eventId);
+  if(!ev || !banner) return;
+  if(!navigator.geolocation){
+    banner.innerHTML = `<div class="banner err">Your browser doesn't support location services, so we can't verify this spot.</div>`;
+    return;
+  }
+  banner.innerHTML = `<div class="banner warn">Getting your location…</div>`;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude, longitude} = pos.coords;
+    const dist = haversineMeters(latitude, longitude, ev.lat, ev.lng);
+    if(dist <= ev.radius){
+      state.plantCapture.verifiedEvent = ev;
+      banner.innerHTML = bannerPlantVerified(ev);
+      const btn = document.getElementById('checkPlantLocBtn');
+      btn.textContent = 'Re-check location';
+      btn.classList.remove('signal');
+      btn.classList.add('secondary');
+      renderPlantCamArea();
+    } else {
+      state.plantCapture.verifiedEvent = null;
+      banner.innerHTML = `<div class="banner err"><strong>Not close enough yet.</strong> You're about ${Math.round(dist)} m from ${esc(ev.location)}. Get closer and re-check.</div>`;
+      renderPlantCamArea();
+    }
+  }, err=>{
+    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(err.message)}). Location access needs to be allowed to verify you're on site.</div>`;
+  }, {enableHighAccuracy:true, timeout:12000});
+}
+function renderPlantCamArea(){
+  const area = document.getElementById('plantCamArea');
+  if(!area) return;
+  const pc = state.plantCapture;
+  if(!pc.verifiedEvent){
+    area.innerHTML = `<p class="hint">Camera unlocks once your location is verified above.</p>`;
+    return;
+  }
+  if(pc.blobUrl){
+    area.innerHTML = `
+      <div class="camwrap"><video src="${pc.blobUrl}" controls playsinline></video></div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button class="btn signal" id="submitPlantBtn">Submit for credits</button>
+        <button class="btn secondary" id="retakePlantBtn">Retake</button>
+      </div>
+    `;
+    document.getElementById('submitPlantBtn').addEventListener('click', submitPlantCapture);
+    document.getElementById('retakePlantBtn').addEventListener('click', ()=>{ pc.blobUrl=null; renderPlantCamArea(); });
+    return;
+  }
+  if(!pc.stream){
+    area.innerHTML = `<button class="btn signal" id="openPlantCamBtn">Turn on camera</button><p class="hint" style="margin-top:8px;">There's no file picker in this flow — only live camera recordings count.</p>`;
+    document.getElementById('openPlantCamBtn').addEventListener('click', openPlantCamera);
+    return;
+  }
+  area.innerHTML = `
+    <div class="camwrap">
+      <video id="livePlantVideo" autoplay muted playsinline></video>
+      ${pc.recording ? `<div class="recdot"><span class="dot"></span>REC</div>` : ''}
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+      ${pc.recording
+        ? `<button class="btn clay" id="stopPlantRecBtn">Stop recording</button>`
+        : `<button class="btn signal" id="startPlantRecBtn">Start recording</button>`}
+      <button class="btn secondary" id="closePlantCamBtn">Turn off camera</button>
+    </div>
+    <p class="hint" style="margin-top:8px;">Recording stops automatically after 8 seconds.</p>
+  `;
+  const v = document.getElementById('livePlantVideo');
+  v.srcObject = pc.stream;
+  if(pc.recording){
+    document.getElementById('stopPlantRecBtn').addEventListener('click', stopPlantRecording);
+  }else{
+    document.getElementById('startPlantRecBtn').addEventListener('click', startPlantRecording);
+  }
+  document.getElementById('closePlantCamBtn').addEventListener('click', ()=>{ stopPlantCamera(); renderPlantCamArea(); });
+}
+async function openPlantCamera(){
+  const area = document.getElementById('plantCamArea');
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    state.plantCapture.stream = stream;
+    renderPlantCamArea();
+  }catch(e){
+    area.innerHTML = `<div class="banner err">Camera access was blocked or isn't available here (${esc(e.message)}). CleanCred only accepts live camera recordings.</div>
+    <button class="btn secondary" id="retryPlantCamBtn" style="margin-top:10px;">Try again</button>`;
+    document.getElementById('retryPlantCamBtn').addEventListener('click', openPlantCamera);
+  }
+}
+function startPlantRecording(){
+  const pc = state.plantCapture;
+  if(!pc.stream) return;
+  pc.chunks = [];
+  let mime = 'video/webm';
+  if(!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime))){ mime = ''; }
+  try{
+    pc.recorder = mime ? new MediaRecorder(pc.stream, {mimeType:mime}) : new MediaRecorder(pc.stream);
+  }catch(e){
+    pc.recorder = new MediaRecorder(pc.stream);
+  }
+  pc.recorder.ondataavailable = ev=>{ if(ev.data && ev.data.size>0) pc.chunks.push(ev.data); };
+  pc.recorder.onstop = ()=>{
+    const blob = new Blob(pc.chunks, {type: pc.recorder.mimeType || 'video/webm'});
+    pc.blobUrl = URL.createObjectURL(blob);
+    pc.recording = false;
+    stopPlantCamera(true);
+    renderPlantCamArea();
+  };
+  pc.recorder.start();
+  pc.recording = true;
+  renderPlantCamArea();
+  pc._autoStop = setTimeout(()=>{ if(pc.recording) stopPlantRecording(); }, 8000);
+}
+function stopPlantRecording(){
+  const pc = state.plantCapture;
+  if(pc._autoStop) clearTimeout(pc._autoStop);
+  if(pc.recorder && pc.recorder.state !== 'inactive') pc.recorder.stop();
+}
+function stopPlantCamera(keepBlob){
+  const pc = state.plantCapture;
+  if(pc.stream){
+    pc.stream.getTracks().forEach(t=>t.stop());
+  }
+  pc.stream = null;
+  pc.recorder = null;
+  pc.recording = false;
+  if(!keepBlob){ /* keep blobUrl if we just finished recording */ }
+}
+async function submitPlantCapture(){
+  const p = currentProfile();
+  const pc = state.plantCapture;
+  const ev = state.events.find(e=>e.id===pc.eventId);
+  if(!p || !ev) return;
+  p.credits += ev.creditReward;
+  p.plantedEvents = p.plantedEvents || [];
+  p.plantedEvents.push(ev.id);
+  p.history.unshift({ type:'earn', desc:`Planted a sapling at ${ev.title}`, amount:ev.creditReward, date:new Date().toISOString() });
+  ev.attendees = ev.attendees || [];
+  ev.attendees.push({ user: state.currentUser, date: new Date().toISOString() });
+  await persistProfiles();
+  await saveData('events-db', true, state.events);
+  state.plantCapture = { eventId:null, verifiedEvent:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false };
+  render();
+}
+
+/* ================= LEADERBOARD ================= */
+async function syncLeaderboard(){
+  if(!state.currentUser) return;
+  const p = currentProfile();
+  if(!p) return;
+  state.leaderboard[state.currentUser] = { name: state.currentUser, homeState: p.homeState || '', credits: p.credits };
+  await saveData('leaderboard-db', true, state.leaderboard);
+}
+function viewLeaderboard(){
+  const p = currentProfile();
+  const entries = Object.values(state.leaderboard);
+  const national = entries.slice().sort((a,b)=>b.credits-a.credits).slice(0,10);
+  const selectedState = state.lbSelectedState || '';
+  const stateEntries = selectedState
+    ? entries.filter(e=>e.homeState===selectedState).sort((a,b)=>b.credits-a.credits).slice(0,10)
+    : [];
+  return `
+  <section class="section">
+    <div class="eyebrow">Rankings</div>
+    <h1 style="font-size:2.2rem;">Leaderboard</h1>
+    <p class="lede" style="margin-top:10px; max-width:620px;">See how you stack up nationally, or pick your state to compare with people cleaning up near you. Credits update from every verified drop, game, video and sapling captured.</p>
+    ${!p
+      ? `<div class="banner warn" style="max-width:460px;">Log in and set your state on "My account" to appear on these boards.</div>`
+      : (p.homeState ? '' : `<div class="banner warn" style="max-width:460px;">Add your state on "My account" to show up on the state leaderboard.</div>`)}
+
+    <div class="lbgrid">
+      <div>
+        <h3 style="font-size:1.2rem; margin-bottom:10px;">🇮🇳 National</h3>
+        ${national.length===0 ? `<p class="hint">No one on the leaderboard yet — be the first to earn credits.</p>` : `
+        <table class="lbtable">
+          <thead><tr><th>#</th><th>Citizen</th><th>State</th><th style="text-align:right;">Credits</th></tr></thead>
+          <tbody>
+            ${national.map((e,i)=>`<tr class="${state.currentUser===e.name?'me':''}"><td class="lbrank">${i+1}</td><td class="lbname">${esc(e.name)}</td><td>${esc(e.homeState||'—')}</td><td class="lbcredits">${e.credits}</td></tr>`).join('')}
+          </tbody>
+        </table>`}
+      </div>
+      <div>
+        <h3 style="font-size:1.2rem; margin-bottom:10px;">📍 By state</h3>
+        <div class="lbpicker">
+          <select id="lbStateSelect" style="min-width:220px;">
+            <option value="">Choose a state…</option>
+            ${INDIA_STATES.map(s=>`<option value="${esc(s)}" ${s===selectedState?'selected':''}>${esc(s)}</option>`).join('')}
+          </select>
+        </div>
+        ${!selectedState
+          ? `<p class="hint">Pick a state above to see its leaderboard.</p>`
+          : stateEntries.length===0
+            ? `<p class="hint">No one from ${esc(selectedState)} has earned credits yet.</p>`
+            : `
+        <table class="lbtable">
+          <thead><tr><th>#</th><th>Citizen</th><th style="text-align:right;">Credits</th></tr></thead>
+          <tbody>
+            ${stateEntries.map((e,i)=>`<tr class="${state.currentUser===e.name?'me':''}"><td class="lbrank">${i+1}</td><td class="lbname">${esc(e.name)}</td><td class="lbcredits">${e.credits}</td></tr>`).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    </div>
+    <p class="hint" style="margin-top:16px;">Both boards refresh automatically while you're on this page.</p>
+  </section>
+  `;
+}
+function bindLeaderboard(){
+  const sel = document.getElementById('lbStateSelect');
+  if(sel){
+    sel.addEventListener('change', ()=>{
+      state.lbSelectedState = sel.value;
+      render();
+    });
+  }
+}
+function startLeaderboardPoll(){
+  stopPoll();
+  pollTimer = setInterval(async ()=>{
+    state.leaderboard = await loadData('leaderboard-db', true, state.leaderboard);
+    if(state.view==='leaderboard') render();
+  }, 6000);
+}
+
+/* ================= LEARN & PLAY ================= */
+function viewLearn(){
+  if(state.activeGame === 'sort') return learnShell(renderSortGame());
+  if(state.activeGame === 'quiz') return learnShell(renderQuizGame());
+  return learnHub();
+}
+function learnShell(inner){
+  return `
+  <section class="section">
+    <button class="btn secondary" data-backgames style="margin-bottom:18px;">&larr; All games</button>
+    ${inner}
+  </section>
+  `;
+}
+function learnHub(){
+  const p = currentProfile();
+  return `
+  <section class="section">
+    <div class="eyebrow">Learn by playing</div>
+    <h1 style="font-size:2.2rem;">Get sharp on sorting, then go earn it for real.</h1>
+    <p class="lede" style="margin-top:10px; max-width:620px;">These quick games teach the same three-way split CleanCred checks for in the field — wet, dry and hazardous. Clear a round and the credits go straight into your account.</p>
+    ${p ? '' : `<div class="banner warn" style="max-width:460px;">Log in on "My account" first — that's where your game credits get saved.</div>`}
+  </section>
+  <section class="section">
+    <div class="gamegrid">
+      <div class="gamecard">
+        <div class="gicon">🗑️</div>
+        <div class="gtitle">Sort It Right</div>
+        <p class="gblurb">Ten items, one at a time. Drop each into wet, dry or hazardous before you second-guess yourself.</p>
+        <div class="greward">Up to 20 credits a round</div>
+        <button class="btn signal" data-game="sort">Play</button>
+      </div>
+      <div class="gamecard">
+        <div class="gicon">🧠</div>
+        <div class="gtitle">Waste Wise Quiz</div>
+        <p class="gblurb">Eight quick questions on segregation, composting and recycling myths.</p>
+        <div class="greward">Up to 24 credits a round</div>
+        <button class="btn signal" data-game="quiz">Play</button>
+      </div>
+      <div class="gamecard soon">
+        <div class="gicon">🔍</div>
+        <div class="gtitle">Litter Patrol</div>
+        <p class="gblurb">Spot the litter hiding in a street scene before the clock runs out.</p>
+        <div class="greward">Coming soon</div>
+        <button class="btn secondary" disabled>Coming soon</button>
+      </div>
+      <div class="gamecard soon">
+        <div class="gicon">💧</div>
+        <div class="gtitle">Water Wise</div>
+        <p class="gblurb">A habits quiz on cutting water waste at home and around the neighbourhood.</p>
+        <div class="greward">Coming soon</div>
+        <button class="btn secondary" disabled>Coming soon</button>
+      </div>
+    </div>
+  </section>
+  `;
+}
+function bindLearn(){
+  document.querySelectorAll('[data-game]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!currentProfile()){ setView('account'); return; }
+      if(btn.dataset.game==='sort') startSortGame();
+      if(btn.dataset.game==='quiz') startQuizGame();
+    });
+  });
+  document.querySelectorAll('[data-backgames]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.activeGame = null; render(); });
+  });
+  document.querySelectorAll('[data-playagain]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.playagain==='sort') startSortGame();
+      if(btn.dataset.playagain==='quiz') startQuizGame();
+    });
+  });
+  document.querySelectorAll('[data-bin]').forEach(btn=>{
+    btn.addEventListener('click', ()=> answerSort(btn.dataset.bin));
+  });
+  document.querySelectorAll('[data-qopt]').forEach(btn=>{
+    btn.addEventListener('click', ()=> answerQuiz(parseInt(btn.dataset.qopt,10)));
+  });
+}
+async function awardGameCredits(desc, credits){
+  const p = currentProfile();
+  if(!p || credits<=0) return;
+  p.credits += credits;
+  p.history.unshift({ type:'earn', desc, amount:credits, date:new Date().toISOString() });
+  await persistProfiles();
+}
+
+/* ---- Sort It Right ---- */
+function startSortGame(){
+  const pool = SORT_ITEMS.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  state.sortGame = { queue: pool.slice(0,10), index:0, score:0, correct:0, finished:false, lastResult:null };
+  state.activeGame = 'sort';
+  render();
+}
+function renderSortGame(){
+  const g = state.sortGame;
+  if(!g) return '';
+  if(g.finished){
+    return `
+    <div class="eyebrow">Sort It Right — results</div>
+    <h1 style="font-size:2rem;">You got ${g.correct} of ${g.queue.length} right.</h1>
+    <p class="lede" style="margin-top:8px;">+${g.score} credits added to your account.</p>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+      <button class="btn signal" data-playagain="sort">Play again</button>
+      <button class="btn secondary" data-backgames>Back to games</button>
+    </div>`;
+  }
+  const item = g.queue[g.index];
+  const fb = g.lastResult ? `<div class="banner ${g.lastResult.correct?'ok':'err'}" style="max-width:340px;">${g.lastResult.correct ? 'Correct!' : `Not quite — ${esc(g.lastResult.item.name)} is ${BIN_META[g.lastResult.correctBin].label.toLowerCase()}.`}</div>` : '';
+  return `
+  <div class="eyebrow">Sort It Right — item ${g.index+1} of ${g.queue.length}</div>
+  <h1 style="font-size:1.9rem;">Where does this go?</h1>
+  <p class="hint">2 credits per correct sort · ${g.score} earned so far</p>
+  ${fb}
+  <div class="itemcard">
+    <div class="em">${item.emoji}</div>
+    <div class="nm">${esc(item.name)}</div>
+  </div>
+  <div class="binrow">
+    <button class="binbtn wet" data-bin="wet">Wet<small>Biodegradable</small></button>
+    <button class="binbtn dry" data-bin="dry">Dry<small>Recyclable</small></button>
+    <button class="binbtn hazard" data-bin="hazard">Hazardous<small>Special handling</small></button>
+  </div>
+  `;
+}
+async function answerSort(binId){
+  const g = state.sortGame;
+  if(!g || g.finished) return;
+  const item = g.queue[g.index];
+  const correct = item.bin === binId;
+  if(correct){ g.score += 2; g.correct++; }
+  g.lastResult = { correct, correctBin:item.bin, item };
+  g.index++;
+  if(g.index >= g.queue.length){
+    g.finished = true;
+    await awardGameCredits(`Sort It Right — ${g.correct}/${g.queue.length} correct`, g.score);
+  }
+  render();
+}
+
+/* ---- Waste Wise Quiz ---- */
+function startQuizGame(){
+  const qs = QUIZ_QUESTIONS.slice();
+  for(let i=qs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qs[i],qs[j]]=[qs[j],qs[i]]; }
+  state.quizGame = { questions: qs, index:0, score:0, correct:0, finished:false, lastResult:null };
+  state.activeGame = 'quiz';
+  render();
+}
+function renderQuizGame(){
+  const g = state.quizGame;
+  if(!g) return '';
+  if(g.finished){
+    return `
+    <div class="eyebrow">Waste Wise Quiz — results</div>
+    <h1 style="font-size:2rem;">You got ${g.correct} of ${g.questions.length} right.</h1>
+    <p class="lede" style="margin-top:8px;">+${g.score} credits added to your account.</p>
+    <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+      <button class="btn signal" data-playagain="quiz">Play again</button>
+      <button class="btn secondary" data-backgames>Back to games</button>
+    </div>`;
+  }
+  const q = g.questions[g.index];
+  const fb = g.lastResult ? `<div class="banner ${g.lastResult.correct?'ok':'err'}" style="max-width:460px;">${g.lastResult.correct ? 'Correct!' : `Not quite — the answer was "${esc(g.lastResult.correctText)}".`}</div>` : '';
+  return `
+  <div class="eyebrow">Waste Wise Quiz — question ${g.index+1} of ${g.questions.length}</div>
+  <h1 style="font-size:1.7rem;">${esc(q.q)}</h1>
+  <p class="hint">3 credits per correct answer · ${g.score} earned so far</p>
+  ${fb}
+  <div style="max-width:460px; margin-top:14px;">
+    ${q.options.map((opt,i)=>`<button class="quizopt" data-qopt="${i}">${esc(opt)}</button>`).join('')}
+  </div>
+  `;
+}
+async function answerQuiz(optIdx){
+  const g = state.quizGame;
+  if(!g || g.finished) return;
+  const q = g.questions[g.index];
+  const correct = optIdx === q.answer;
+  if(correct){ g.score += 3; g.correct++; }
+  g.lastResult = { correct, correctText: q.options[q.answer] };
+  g.index++;
+  if(g.index >= g.questions.length){
+    g.finished = true;
+    await awardGameCredits(`Waste Wise Quiz — ${g.correct}/${g.questions.length} correct`, g.score);
+  }
+  render();
+}
+
+/* ================= WATCH & EARN ================= */
+function viewWatch(){
+  const p = currentProfile();
+  return `
+  <section class="section">
+    <div class="eyebrow">Watch & earn</div>
+    <h1 style="font-size:2.2rem;">Watch, learn, get credited.</h1>
+    <p class="lede" style="margin-top:10px; max-width:620px;">Short videos on where your waste actually goes. Watch one all the way through and its credits land in your account, no quiz required.</p>
+    ${p ? `<div class="banner ok" style="max-width:420px;">You have <strong id="watchCreditsNum">${p.credits}</strong> credits.</div>` : `<div class="banner warn" style="max-width:440px;">Log in on "My account" to earn credits from videos — you can still watch without logging in.</div>`}
+  </section>
+  <section class="section">
+    <div class="vidgrid">
+      ${LEARN_VIDEOS.map(v=>{
+        const watched = p && p.watched && p.watched.includes(v.id);
+        const label = watched ? 'Claimed ✓' : (p ? `Watch fully to unlock` : 'Log in to earn credits');
+        const cls = watched ? 'secondary' : 'secondary';
+        return `
+        <div class="vidcard">
+          <div class="vidframe-wrap"><div class="vidframe-inner" id="yt-${v.id}"></div></div>
+          <div class="vidbody">
+            <div class="vidtitle">${esc(v.title)}</div>
+            <div class="vidsource">${esc(v.source)}</div>
+            <p class="vidblurb">${esc(v.blurb)}</p>
+            <button class="btn ${cls}" id="claim-${v.id}" data-vid="${v.id}" data-credits="${v.credits}" data-state="${watched?'claimed':'locked'}" ${(!p||watched)?'disabled':''}>${watched ? label : `${label} (${v.credits} credits)`}</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </section>
+  `;
+}
+function loadYTApi(){
+  return new Promise(resolve=>{
+    if(window.YT && window.YT.Player){ resolve(); return; }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){ if(prev) prev(); resolve(); };
+    if(!document.getElementById('yt-iframe-api')){
+      const tag = document.createElement('script');
+      tag.id = 'yt-iframe-api';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+  });
+}
+async function bindWatch(){
+  document.querySelectorAll('[data-vid]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(btn.dataset.state !== 'unlocked') return;
+      const vid = btn.dataset.vid;
+      const credits = parseInt(btn.dataset.credits, 10);
+      const p = currentProfile();
+      if(!p) return;
+      p.watched = p.watched || [];
+      if(p.watched.includes(vid)) return;
+      p.watched.push(vid);
+      p.credits += credits;
+      const video = LEARN_VIDEOS.find(v=>v.id===vid);
+      p.history.unshift({ type:'earn', desc:`Watched "${video.title}"`, amount:credits, date:new Date().toISOString() });
+      await persistProfiles();
+      btn.dataset.state = 'claimed';
+      btn.disabled = true;
+      btn.textContent = 'Claimed ✓';
+      const num = document.getElementById('watchCreditsNum');
+      if(num) num.textContent = p.credits;
+    });
+  });
+  try{
+    await loadYTApi();
+  }catch(e){ return; }
+  LEARN_VIDEOS.forEach(v=>{
+    const el = document.getElementById('yt-'+v.id);
+    const btn = document.getElementById('claim-'+v.id);
+    if(!el || !window.YT) return;
+    try{
+      ytPlayers[v.id] = new YT.Player(el, {
+        videoId: v.id,
+        width: '100%',
+        height: '100%',
+        playerVars: { rel:0, modestbranding:1, playsinline:1 },
+        events: {
+          onStateChange: (ev)=>{
+            if(ev.data === YT.PlayerState.ENDED){
+              const b = document.getElementById('claim-'+v.id);
+              if(b && b.dataset.state === 'locked'){
+                b.dataset.state = 'unlocked';
+                b.disabled = false;
+                b.classList.remove('secondary');
+                b.classList.add('signal');
+                b.textContent = `Claim ${v.credits} credits`;
+              }
+            }
+          }
+        }
+      });
+    }catch(e){ /* player failed to init, video still playable via default iframe fallback */ }
+  });
+}
+
+/* ================= ACCOUNT ================= */
+function viewAccount(){
+  const p = currentProfile();
+  if(!p){
+    return `
+    <section class="section wrap narrow" style="padding:0;">
+      <div class="eyebrow">My account</div>
+      <h1 style="font-size:2.2rem;">Log in or create an account</h1>
+      <p class="lede" style="margin-top:10px;">Pick a username. This is a lightweight demo login stored only on this device — no password needed.</p>
+      <div class="card" style="margin-top:18px;">
+        <div class="field">
+          <label for="usernameInput">Username</label>
+          <input id="usernameInput" placeholder="e.g. neil_r" autocomplete="off">
+        </div>
+        <button class="btn signal block" id="loginBtn">Continue</button>
+        <div id="loginMsg"></div>
+      </div>
+    </section>`;
+  }
+  const history = p.history.slice(0,20);
+  return `
+  <section class="section">
+    <div class="eyebrow">My account</div>
+    <h1 style="font-size:2.2rem;">Hi, ${esc(state.currentUser)}</h1>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-top:18px;">
+      <div class="credittag"><span class="num">${p.credits}</span><span class="lab">credits<br>available</span></div>
+      <button class="btn secondary" id="logoutBtn">Log out</button>
+    </div>
+  </section>
+  <section class="section card" style="max-width:420px;">
+    <h3 style="font-size:1.2rem; margin-bottom:10px;">Home state</h3>
+    <p class="hint" style="margin-top:-4px; margin-bottom:12px;">Used to place you on the state leaderboard.</p>
+    <div class="field">
+      <label for="homeStateSelect">Your state</label>
+      <select id="homeStateSelect">
+        <option value="">Not set</option>
+        ${INDIA_STATES.map(s=>`<option value="${esc(s)}" ${p.homeState===s?'selected':''}>${esc(s)}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn secondary" id="saveHomeStateBtn">Save state</button>
+    <div id="homeStateMsg"></div>
+  </section>
+  <section class="section">
+    <h3 style="font-size:1.3rem; margin-bottom:8px;">Activity</h3>
+    ${history.length===0 ? `<p class="hint">No activity yet. Record a verified drop to start earning.</p>` : `
+    <div class="histlist">
+      ${history.map(h=>`
+        <div class="histrow">
+          <div>${esc(h.desc)}<div class="when">${fmtDate(h.date)}</div></div>
+          <div class="amt ${h.type==='earn'?'plus':'minus'}">${h.type==='earn'?'+':'-'}${h.amount}</div>
+        </div>
+      `).join('')}
+    </div>`}
+  </section>
+  `;
+}
+function bindAccount(){
+  const loginBtn = document.getElementById('loginBtn');
+  if(loginBtn){
+    loginBtn.addEventListener('click', async ()=>{
+      const name = document.getElementById('usernameInput').value.trim();
+      const msg = document.getElementById('loginMsg');
+      if(!name){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Enter a username to continue.</div>`; return; }
+      if(!state.profiles[name]){
+        state.profiles[name] = { credits:0, history:[], watched:[], homeState:'', plantedEvents:[] };
+        await persistProfiles();
+      }
+      state.currentUser = name;
+      render();
+    });
+  }
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', ()=>{ state.currentUser = null; render(); });
+  }
+  const saveStateBtn = document.getElementById('saveHomeStateBtn');
+  if(saveStateBtn){
+    saveStateBtn.addEventListener('click', async ()=>{
+      const p = currentProfile();
+      if(!p) return;
+      p.homeState = document.getElementById('homeStateSelect').value;
+      await persistProfiles();
+      const stateNote = p.homeState ? (' — you will show up under ' + esc(p.homeState)) : '';
+      document.getElementById('homeStateMsg').innerHTML = `<div class="banner ok" style="margin-top:10px;">Saved${stateNote} on the leaderboard.</div>`;
+    });
+  }
+}
+
+/* ================= REQUEST SPOT ================= */
+function viewRequestSpot(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">Request a spot</div>
+    <h1 style="font-size:2.2rem;">Add a dumping point</h1>
+    <p class="lede" style="margin-top:10px;">Know a bin or dumpster that should count for credit? Stand at it, capture your live location, and submit it. New spots become checkable right away so you can verify from there next time.</p>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="field">
+        <label for="spotName">Spot name</label>
+        <input id="spotName" placeholder="e.g. Balmatta bus stand bin">
+      </div>
+      <div class="field">
+        <label for="spotNote">Notes (optional)</label>
+        <textarea id="spotNote" rows="3" placeholder="Anything that helps others find it"></textarea>
+      </div>
+      <div id="spotCoordsMsg" class="hint" style="margin-bottom:12px;">Location not captured yet.</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn secondary" id="captureLocBtn">Use my current location</button>
+        <button class="btn signal" id="submitSpotBtn" disabled>Submit spot</button>
+      </div>
+      <div id="spotMsg"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 style="font-size:1.3rem; margin-bottom:10px;">Recently added spots</h3>
+    <div class="spotlist">
+      ${state.spots.approved.slice().reverse().slice(0,8).map(s=>`
+        <div class="spotitem"><span>${esc(s.name)}</span><span class="dist">${s.source==='seed' ? 'seed data' : 'community-added'}</span></div>
+      `).join('')}
+    </div>
+  </section>
+  `;
+}
+function bindRequestSpot(){
+  let captured = null;
+  const coordsMsg = document.getElementById('spotCoordsMsg');
+  const submitBtn = document.getElementById('submitSpotBtn');
+  document.getElementById('captureLocBtn').addEventListener('click', ()=>{
+    if(!navigator.geolocation){ coordsMsg.textContent = "Your browser doesn't support location services."; return; }
+    coordsMsg.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(pos=>{
+      captured = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      coordsMsg.textContent = `Captured: ${captured.lat.toFixed(5)}, ${captured.lng.toFixed(5)}`;
+      submitBtn.disabled = false;
+    }, err=>{
+      coordsMsg.textContent = `Couldn't get location (${err.message}).`;
+    }, {enableHighAccuracy:true, timeout:12000});
+  });
+  submitBtn.addEventListener('click', async ()=>{
+    const name = document.getElementById('spotName').value.trim();
+    const msg = document.getElementById('spotMsg');
+    if(!name){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Give the spot a name.</div>`; return; }
+    if(!captured){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Capture your location first.</div>`; return; }
+    const spot = {
+      id: 's' + Date.now(),
+      name,
+      lat: captured.lat, lng: captured.lng,
+      radius: 120,
+      source: 'community',
+      submittedBy: state.currentUser || 'anonymous'
+    };
+    state.spots.approved.push(spot);
+    await saveData('spots-db', true, state.spots);
+    msg.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Spot added.</strong> It's live — you can check in from here on the Record page.</div>`;
+    submitBtn.disabled = true;
+    document.getElementById('spotName').value='';
+    document.getElementById('spotNote').value='';
+  });
+}
+
+/* ================= BUSINESSES ================= */
+function viewBusinesses(){
+  const p = currentProfile();
+  return `
+  <section class="section">
+    <div class="eyebrow">Redeem credits</div>
+    <h1 style="font-size:2.2rem;">Spend where it counts</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">These local businesses partner with CleanCred to turn your credits into real coupons.</p>
+    ${p ? `<div class="banner ok" style="max-width:400px;">You have <strong>${p.credits} credits</strong> to spend.</div>` : `<div class="banner warn" style="max-width:420px;">Log in on the "My account" page to redeem credits.</div>`}
+    <div class="bizgrid">
+      ${state.businesses.map(b=>`
+        <div class="bizcard">
+          <div class="emoji">${b.emoji}</div>
+          <div class="name">${esc(b.name)}</div>
+          <div class="cat">${esc(b.cat)}</div>
+          <div class="offer">${esc(b.offer)}</div>
+          <div class="cost">${b.cost} credits</div>
+          <button class="btn ${p && p.credits>=b.cost ? 'signal' : 'secondary'}" data-redeem="${b.id}" ${!p || p.credits<b.cost ? 'disabled' : ''}>Redeem</button>
+        </div>
+      `).join('')}
+    </div>
+    <div id="redeemMsg" style="margin-top:16px;"></div>
+  </section>
+  `;
+}
+function bindBusinesses(){
+  document.querySelectorAll('[data-redeem]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const p = currentProfile();
+      const biz = state.businesses.find(b=>b.id===btn.dataset.redeem);
+      if(!p || !biz || p.credits < biz.cost) return;
+      p.credits -= biz.cost;
+      const code = 'CC-' + Math.random().toString(36).slice(2,8).toUpperCase();
+      p.history.unshift({ type:'redeem', desc:`Redeemed at ${biz.name} (code ${code})`, amount:biz.cost, date:new Date().toISOString() });
+      await persistProfiles();
+      document.getElementById('redeemMsg').innerHTML = `<div class="banner ok">Redeemed! Your coupon code for <strong>${esc(biz.name)}</strong> is <strong>${code}</strong>. Show this at checkout.</div>`;
+      render();
+    });
+  });
+}
+
+/* ================= PARTNER ================= */
+function viewPartner(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">For businesses</div>
+    <h1 style="font-size:2.2rem;">Partner with CleanCred</h1>
+    <p class="lede" style="margin-top:10px;">Offer a coupon or discount that CleanCred members can redeem with their credits, and get in front of people who are actively keeping your area clean.</p>
+    <div class="card" style="margin-top:20px;">
+      <div class="field"><label for="pName">Business name</label><input id="pName" placeholder="e.g. Green Leaf Cafe"></div>
+      <div class="field"><label for="pContact">Contact email</label><input id="pContact" type="email" placeholder="owner@business.com"></div>
+      <div class="field"><label for="pCat">Category</label><input id="pCat" placeholder="e.g. Food & drink, retail, services"></div>
+      <div class="field"><label for="pMsg">What offer would you like to give?</label><textarea id="pMsg" rows="3" placeholder="e.g. 10% off, free item with purchase"></textarea></div>
+      <button class="btn signal block" id="partnerSubmitBtn">Submit application</button>
+      <div id="partnerMsg"></div>
+    </div>
+  </section>
+  <section class="section">
+    <p class="hint">${state.partnerApps.length} businesses have applied to partner so far on this preview.</p>
+  </section>
+  `;
+}
+function bindPartner(){
+  document.getElementById('partnerSubmitBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('pName').value.trim();
+    const contact = document.getElementById('pContact').value.trim();
+    const cat = document.getElementById('pCat').value.trim();
+    const msgText = document.getElementById('pMsg').value.trim();
+    const out = document.getElementById('partnerMsg');
+    if(!name || !contact){
+      out.innerHTML = `<div class="banner err" style="margin-top:12px;">Business name and contact email are required.</div>`;
+      return;
+    }
+    state.partnerApps.push({ name, contact, cat, msgText, date:new Date().toISOString() });
+    await saveData('partner-applications', true, state.partnerApps);
+    out.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Thanks — application received.</strong> We'll reach out at ${esc(contact)} about listing your offer.</div>`;
+    ['pName','pContact','pCat','pMsg'].forEach(id=>document.getElementById(id).value='');
+  });
+}
+
+/* ================= DONATE ================= */
+function viewDonate(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">Support us</div>
+    <h1 style="font-size:2.2rem;">Help keep CleanCred running</h1>
+    <p class="lede" style="margin-top:10px;">CleanCred is upkept as a public-good project — hosting, verification checks and partner outreach all cost something. Donations go straight to keeping the site free for everyone throwing trash the right way.</p>
+    <div class="card" style="margin-top:20px;">
+      <div class="field"><label>Amount (₹)</label>
+        <div class="amtgrid">
+          <button class="amtbtn" data-amt="50">₹50</button>
+          <button class="amtbtn" data-amt="150">₹150</button>
+          <button class="amtbtn" data-amt="500">₹500</button>
+          <button class="amtbtn" data-amt="custom">Other</button>
+        </div>
+        <input id="customAmt" type="number" min="1" placeholder="Enter amount" style="display:none;">
+      </div>
+      <div class="field"><label for="dName">Name (optional)</label><input id="dName" placeholder="Anonymous"></div>
+      <div class="field"><label for="dMsg">Message (optional)</label><textarea id="dMsg" rows="2" placeholder="A note to the team"></textarea></div>
+      <button class="btn signal block" id="donateBtn">Donate</button>
+      <p class="hint" style="margin-top:10px;">This preview doesn't connect to a real payment processor — your donation is recorded here to show how the flow would work.</p>
+      <div id="donateMsg"></div>
+    </div>
+  </section>
+  <section class="section">
+    <h3 style="font-size:1.2rem;">Recent supporters</h3>
+    ${state.donations.length===0 ? `<p class="hint">No donations yet — be the first.</p>` : `
+    <div class="histlist">
+      ${state.donations.slice().reverse().slice(0,10).map(d=>`
+        <div class="histrow"><div>${esc(d.name||'Anonymous')}${d.msg? ' — '+esc(d.msg):''}<div class="when">${fmtDate(d.date)}</div></div><div class="amt plus">₹${d.amount}</div></div>
+      `).join('')}
+    </div>`}
+  </section>
+  `;
+}
+function bindDonate(){
+  let chosen = null;
+  document.querySelectorAll('.amtbtn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.amtbtn').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+      const custom = document.getElementById('customAmt');
+      if(b.dataset.amt === 'custom'){
+        custom.style.display='block'; custom.focus(); chosen = null;
+      }else{
+        custom.style.display='none';
+        chosen = parseInt(b.dataset.amt, 10);
+      }
+    });
+  });
+  document.getElementById('donateBtn').addEventListener('click', async ()=>{
+    const custom = document.getElementById('customAmt');
+    let amount = chosen;
+    if(custom.style.display==='block'){ amount = parseInt(custom.value,10); }
+    const out = document.getElementById('donateMsg');
+    if(!amount || amount<=0){
+      out.innerHTML = `<div class="banner err" style="margin-top:12px;">Choose or enter an amount.</div>`;
+      return;
+    }
+    const name = document.getElementById('dName').value.trim();
+    const msgText = document.getElementById('dMsg').value.trim();
+    state.donations.push({ name, msg: msgText, amount, date:new Date().toISOString() });
+    await saveData('donations-log', true, state.donations);
+    out.innerHTML = `<div class="banner ok" style="margin-top:12px;">Thank you${name?', '+esc(name):''} — your ₹${amount} donation was recorded.</div>`;
+    render();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
