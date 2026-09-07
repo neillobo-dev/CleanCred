@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanCred — Get credit for cleaning up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #E9E7DD;
+    --panel: #F5F4EE;
+    --ink: #1B2420;
+    --ink-soft: #4B564F;
+    --forest: #1F5A3C;
+    --forest-dark: #163F2A;
+    --moss: #6B8F71;
+    --signal: #E8A227;
+    --signal-dark: #B87C15;
+    --clay: #C4573B;
+    --line: #CFCABE;
+    --white: #FFFFFF;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:900;
+    line-height:0.98;
+    letter-spacing:0.2px;
+    margin:0;
+    color:var(--forest-dark);
+  }
+  p{margin:0 0 12px 0;}
+  a{color:inherit;}
+  button, input, textarea, select{font-family:inherit; font-size:1rem;}
+  ::selection{background:var(--signal); color:var(--ink);}
+  :focus-visible{outline:3px solid var(--signal); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---- Shell ---- */
+  #app{min-height:100vh; display:flex; flex-direction:column;}
+
+  header.topbar{
+    background:var(--forest);
+    color:var(--white);
+    border-bottom:4px solid var(--signal);
+    position:sticky; top:0; z-index:40;
+  }
+  .topbar-inner{
+    max-width:1080px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px;
+  }
+  .logo{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    letter-spacing:0.5px;
+    display:flex; align-items:center; gap:8px;
+    cursor:pointer; background:none; border:none; color:var(--white); padding:0;
+  }
+  .logo .mark{
+    width:12px;height:12px; background:var(--signal); display:inline-block; transform:rotate(45deg);
+  }
+  .navtoggle{
+    background:transparent; border:2px solid rgba(255,255,255,0.5); color:var(--white);
+    padding:8px 14px; border-radius:var(--radius); cursor:pointer;
+    font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .navtoggle:hover{border-color:var(--white);}
+
+  nav.navpanel{
+    display:none;
+    background:var(--forest-dark);
+    border-bottom:1px solid rgba(255,255,255,0.15);
+  }
+  nav.navpanel.open{display:block;}
+  .navpanel-inner{
+    max-width:1080px; margin:0 auto; padding:10px 20px 18px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:4px;
+  }
+  .navlink{
+    text-align:left; background:none; border:none; color:rgba(255,255,255,0.85);
+    padding:12px 10px; font-size:1.02rem; font-weight:600; cursor:pointer;
+    border-left:3px solid transparent; display:flex; flex-direction:column; gap:2px;
+  }
+  .navlink small{font-weight:400; color:rgba(255,255,255,0.55); font-size:0.78rem;}
+  .navlink:hover{background:rgba(255,255,255,0.06); border-left-color:var(--signal);}
+  .navlink.active{border-left-color:var(--signal); color:var(--white); background:rgba(255,255,255,0.08);}
+
+  main{flex:1; width:100%;}
+  .wrap{max-width:1080px; margin:0 auto; padding:40px 20px 60px;}
+  .wrap.narrow{max-width:680px;}
+
+  footer.site{
+    border-top:1px solid var(--line); padding:22px 20px; text-align:center;
+    color:var(--ink-soft); font-size:0.84rem; background:var(--panel);
+  }
+  footer.site strong{color:var(--ink);}
+
+  /* ---- Generic bits ---- */
+  .eyebrow{ color:var(--moss); font-weight:600; font-size:0.92rem; margin-bottom:6px; }
+  .section{margin-bottom:52px;}
+  .section:last-child{margin-bottom:0;}
+  .rule{border:none; border-top:1px solid var(--line); margin:36px 0;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border:2px solid var(--forest); background:var(--forest); color:var(--white);
+    padding:12px 22px; font-weight:700; border-radius:var(--radius); cursor:pointer;
+    font-size:1rem;
+  }
+  .btn:hover{background:var(--forest-dark); border-color:var(--forest-dark);}
+  .btn.secondary{background:transparent; color:var(--forest); }
+  .btn.secondary:hover{background:rgba(31,90,60,0.08);}
+  .btn.signal{background:var(--signal); border-color:var(--signal); color:var(--ink);}
+  .btn.signal:hover{background:var(--signal-dark); border-color:var(--signal-dark); color:var(--white);}
+  .btn.clay{background:var(--clay); border-color:var(--clay); color:var(--white);}
+  .btn.clay:hover{background:#a3452e; border-color:#a3452e;}
+  .btn:disabled{opacity:0.45; cursor:not-allowed;}
+  .btn.block{width:100%;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line); padding:22px; border-radius:var(--radius);
+  }
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-weight:600; margin-bottom:6px; font-size:0.92rem;}
+  .field input, .field textarea{
+    width:100%; padding:11px 12px; border:1.5px solid var(--line); border-radius:var(--radius);
+    background:var(--white); color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{border-color:var(--forest);}
+  .hint{font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+
+  .banner{padding:14px 16px; border-radius:var(--radius); font-size:0.92rem; margin-bottom:18px; border:1.5px solid;}
+  .banner.ok{background:#EAF3EC; border-color:var(--forest); color:var(--forest-dark);}
+  .banner.warn{background:#FBEFE3; border-color:var(--signal-dark); color:#7A4F0E;}
+  .banner.err{background:#F8E9E5; border-color:var(--clay); color:#7A2E1B;}
+
+  .steps{display:flex; flex-direction:column; gap:0;}
+  .step{display:flex; gap:16px; padding:20px 0; border-top:1px solid var(--line);}
+  .step:first-child{border-top:none;}
+  .stepnum{
+    font-family:'Barlow Condensed', sans-serif; font-weight:900; font-size:2.2rem; color:var(--moss);
+    min-width:46px;
+  }
+
+  /* mission */
+  .hero{padding-top:10px;}
+  .hero h1{font-size:clamp(2.6rem, 7vw, 4.6rem);}
+  .hero .lede{font-size:1.15rem; max-width:640px; color:var(--ink-soft); margin-top:16px;}
+  .hero-actions{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap;}
+  .statrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:8px;}
+  .stat{background:var(--panel); padding:18px;}
+  .stat .num{font-family:'Barlow Condensed'; font-weight:900; font-size:2.4rem; color:var(--forest); line-height:1;}
+  .stat .lab{font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+
+  /* record page */
+  .camwrap{background:#0E1512; border-radius:var(--radius); overflow:hidden; position:relative; aspect-ratio:4/3; max-width:480px;}
+  .camwrap video{width:100%; height:100%; object-fit:cover; display:block;}
+  .recdot{position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:6px; color:#fff; font-size:0.82rem; font-weight:700; background:rgba(0,0,0,0.4); padding:4px 9px; border-radius:20px;}
+  .recdot .dot{width:9px;height:9px;border-radius:50%; background:var(--clay);}
+
+  .spotlist{display:flex; flex-direction:column; gap:10px; margin-top:14px;}
+  .spotitem{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); font-size:0.92rem;}
+  .spotitem .dist{color:var(--ink-soft); font-size:0.82rem;}
+
+  /* dashboard */
+  .credittag{
+    display:inline-flex; align-items:baseline; gap:8px; background:var(--forest); color:var(--white);
+    padding:16px 22px; border-radius:var(--radius);
+  }
+  .credittag .num{font-family:'Barlow Condensed'; font-weight:900; font-size:3rem; color:var(--signal);}
+  .credittag .lab{font-size:0.9rem;}
+  .histlist{margin-top:8px;}
+  .histrow{display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--line); font-size:0.92rem;}
+  .histrow:first-child{border-top:none;}
+  .histrow .amt.plus{color:var(--forest); font-weight:700;}
+  .histrow .amt.minus{color:var(--clay); font-weight:700;}
+  .histrow .when{color:var(--ink-soft); font-size:0.8rem;}
+
+  /* business grid */
+  .bizgrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; margin-top:10px;}
+  .bizcard{background:var(--white); border:1px solid var(--line); padding:18px; border-radius:var(--radius); display:flex; flex-direction:column; gap:8px;}
+  .bizcard .emoji{font-size:1.8rem;}
+  .bizcard .name{font-weight:700; font-size:1.05rem;}
+  .bizcard .cat{color:var(--moss); font-size:0.8rem; font-weight:600;}
+  .bizcard .offer{font-size:0.9rem; color:var(--ink-soft); flex:1;}
+  .bizcard .cost{font-weight:700; color:var(--forest-dark);}
+
+  .amtgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;}
+  .amtbtn{padding:14px 6px; border:2px solid var(--line); background:var(--white); border-radius:var(--radius); font-weight:700; cursor:pointer; text-align:center;}
+  .amtbtn.sel{border-color:var(--signal); background:#FBF1DD;}
+
+  .badge{display:inline-block; background:var(--signal); color:var(--ink); font-weight:700; font-size:0.72rem; padding:3px 8px; border-radius:20px;}
+
+  @media (min-width: 720px){
+    .navpanel-inner{grid-template-columns:repeat(4, 1fr);}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="logo" id="logoBtn" aria-label="CleanCred home"><span class="mark"></span>CleanCred</button>
+      <button class="navtoggle" id="navToggle" aria-expanded="false">
+        <span id="navToggleLabel">Menu</span>
+      </button>
+    </div>
+  </header>
+  <nav class="navpanel" id="navPanel">
+    <div class="navpanel-inner" id="navPanelInner"></div>
+  </nav>
+  <main>
+    <div class="wrap" id="content"></div>
+  </main>
+  <footer class="site">
+    <strong>CleanCred</strong> is a preview built for this conversation — credits, coupons and donations shown here are simulated on your device and no real payments are processed. Camera capture and location checks use your browser's live permissions.
+  </footer>
+</div>
+
+<script>
+/* ---------------- storage helpers ---------------- */
+const mem = {}; // in-session fallback if window.storage is unavailable
+async function loadData(key, shared, fallback){
+  try{
+    const r = await window.storage.get(key, shared);
+    return r ? JSON.parse(r.value) : fallback;
+  }catch(e){ return (key in mem) ? mem[key] : fallback; }
+}
+async function saveData(key, shared, value){
+  mem[key] = value;
+  try{ await window.storage.set(key, JSON.stringify(value), shared); }catch(e){ /* session-only */ }
+}
+
+/* ---------------- state ---------------- */
+const state = {
+  view: 'mission',
+  profiles: {},        // personal (per-device): { username: {credits, history:[]} }
+  currentUser: null,
+  spots: { approved: [] },     // shared
+  businesses: [],              // shared
+  partnerApps: [],             // shared
+  donations: [],                // shared
+  record: { verifiedSpot:null, stream:null, recorder:null, chunks:[], blobUrl:null, recording:false }
+};
+
+const DEFAULT_SPOTS = [
+  { id:'s1', name:'Hampankatta municipal bin cluster', lat:12.8698, lng:74.8420, radius:120, source:'seed' },
+  { id:'s2', name:'Kadri Park waste collection point', lat:12.8990, lng:74.8480, radius:120, source:'seed' },
+  { id:'s3', name:'Mangaladevi Temple road dumpster', lat:12.8650, lng:74.8410, radius:120, source:'seed' },
+  { id:'s4', name:'Surathkal beach road bin', lat:13.0100, lng:74.7930, radius:150, source:'seed' }
+];
+const DEFAULT_BUSINESSES = [
+  { id:'b1', name:'Green Leaf Cafe', cat:'Food & drink', emoji:'☕', offer:'Free filter coffee with any snack', cost:40 },
+  { id:'b2', name:'Coastal Cycles', cat:'Retail', emoji:'🚲', offer:'10% off bike servicing', cost:60 },
+  { id:'b3', name:'Bloom Grocers', cat:'Groceries', emoji:'🥬', offer:'₹50 off a ₹300+ bill', cost:70 },
+  { id:'b4', name:'Sunder Laundry', cat:'Services', emoji:'🧺', offer:'One free wash & fold load', cost:50 },
+  { id:'b5', name:'Pageturner Books', cat:'Retail', emoji:'📚', offer:'₹100 off any paperback', cost:90 },
+  { id:'b6', name:'FitBox Gym', cat:'Fitness', emoji:'🏋️', offer:'One free guest session', cost:80 }
+];
+
+const NAV = [
+  { id:'mission', label:'Our mission', sub:'Why CleanCred exists' },
+  { id:'record', label:'Record & earn', sub:'Log a verified drop' },
+  { id:'account', label:'My account', sub:'Credits & history' },
+  { id:'request-spot', label:'Request a spot', sub:'Add a dumping point' },
+  { id:'businesses', label:'Redeem credits', sub:'Partnered businesses' },
+  { id:'partner', label:'Partner with us', sub:'For businesses' },
+  { id:'donate', label:'Support us', sub:'Keep it running' }
+];
+
+/* ---------------- utilities ---------------- */
+function haversineMeters(lat1,lng1,lat2,lng2){
+  const R=6371000;
+  const toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function fmtDate(iso){
+  try{ return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; }
+}
+function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function currentProfile(){ return state.currentUser ? state.profiles[state.currentUser] : null; }
+async function persistProfiles(){ await saveData('profiles', false, state.profiles); }
+
+/* ---------------- init ---------------- */
+async function init(){
+  state.profiles = await loadData('profiles', false, {});
+  const spots = await loadData('spots-db', true, null);
+  state.spots.approved = spots && spots.approved ? spots.approved : DEFAULT_SPOTS.slice();
+  if(!spots) await saveData('spots-db', true, state.spots);
+
+  const bizs = await loadData('businesses-db', true, null);
+  state.businesses = bizs || DEFAULT_BUSINESSES.slice();
+  if(!bizs) await saveData('businesses-db', true, state.businesses);
+
+  state.partnerApps = await loadData('partner-applications', true, []);
+  state.donations = await loadData('donations-log', true, []);
+
+  buildNav();
+  render();
+}
+
+function buildNav(){
+  const wrap = document.getElementById('navPanelInner');
+  wrap.innerHTML = NAV.map(n => `
+    <button class="navlink" data-view="${n.id}">
+      ${esc(n.label)}
+      <small>${esc(n.sub)}</small>
+    </button>
+  `).join('');
+  wrap.querySelectorAll('.navlink').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      setView(btn.dataset.view);
+      closeNav();
+    });
+  });
+}
+function setView(v){
+  stopCamera();
+  state.view = v;
+  render();
+  window.scrollTo({top:0, behavior:'auto'});
+}
+function closeNav(){
+  document.getElementById('navPanel').classList.remove('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded','false');
+}
+document.getElementById('navToggle').addEventListener('click', ()=>{
+  const p = document.getElementById('navPanel');
+  const open = p.classList.toggle('open');
+  document.getElementById('navToggle').setAttribute('aria-expanded', open ? 'true':'false');
+});
+document.getElementById('logoBtn').addEventListener('click', ()=> { setView('mission'); closeNav(); });
+
+/* ---------------- render router ---------------- */
+function render(){
+  document.querySelectorAll('.navlink').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === state.view);
+  });
+  const c = document.getElementById('content');
+  const views = {
+    mission: viewMission,
+    record: viewRecord,
+    account: viewAccount,
+    'request-spot': viewRequestSpot,
+    businesses: viewBusinesses,
+    partner: viewPartner,
+    donate: viewDonate
+  };
+  c.innerHTML = (views[state.view] || viewMission)();
+  bindView(state.view);
+}
+
+/* ================= MISSION ================= */
+function viewMission(){
+  return `
+  <section class="hero section">
+    <div class="eyebrow">The problem in our streets</div>
+    <h1>Trash doesn't clean<br>itself up.</h1>
+    <p class="lede">A major problem right now is trash thrown randomly around our locality. We started CleanCred to reward people for throwing trash where it belongs — because a once-a-month cleaning drive can't do what daily habits can.</p>
+    <div class="hero-actions">
+      <button class="btn signal" data-go="record">Record a drop, earn credits</button>
+      <button class="btn secondary" data-go="businesses">See what credits are worth</button>
+    </div>
+    <div class="statrow">
+      <div class="stat"><div class="num">${state.spots.approved.length}</div><div class="lab">verified dumping spots</div></div>
+      <div class="stat"><div class="num">${state.businesses.length}</div><div class="lab">partnered businesses</div></div>
+      <div class="stat"><div class="num">${Object.keys(state.profiles).length}</div><div class="lab">people earning on this device</div></div>
+      <div class="stat"><div class="num">${state.donations.length}</div><div class="lab">donations received</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2 style="font-size:1.8rem; margin-bottom:18px;">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="stepnum">01</div>
+        <div><strong>Stand at a verified spot.</strong><p class="hint" style="margin-top:6px;">CleanCred checks your device's location against our list of approved dumpsters and bins, so credit only goes to real drops at real spots. Don't see one nearby? Add it from the "Request a spot" page.</p></div>
+      </div>
+      <div class="step">
+        <div class="stepnum">02</div>
+        <div><strong>Record yourself, live.</strong><p class="hint" style="margin-top:6px;">You film the drop right in the app using your camera. There's no upload button — we don't accept photos or clips from your gallery, so old or borrowed footage can't be claimed for credit.</p></div>
+      </div>
+      <div class="step">
+        <div class="stepnum">03</div>
+        <div><strong>Spend your credits nearby.</strong><p class="hint" style="margin-top:6px;">Redeem what you earn for coupons at cafes, shops and services that have partnered with CleanCred in your area.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section card">
+    <h3 style="font-size:1.3rem; margin-bottom:10px;">Why not just run more cleaning drives?</h3>
+    <p style="color:var(--ink-soft); margin:0;">Drives are organised, occasional, and depend on volunteers showing up. Litter happens every day, from everyone. CleanCred turns the everyday act of binning your trash properly into something that's tracked and rewarded, so good disposal habits get the same daily attention the litter does.</p>
+  </section>
+  `;
+}
+
+/* ================= RECORD ================= */
+function viewRecord(){
+  const p = currentProfile();
+  if(!p){
+    return `
+    <section class="section wrap narrow" style="padding:0;">
+      <div class="eyebrow">Record & earn</div>
+      <h1 style="font-size:2.2rem;">Log in first</h1>
+      <p class="lede" style="margin-top:12px;">You'll need an account so we know whose credits to add to.</p>
+      <button class="btn signal" data-go="account" style="margin-top:8px;">Go to my account</button>
+    </section>`;
+  }
+  const r = state.record;
+  return `
+  <section class="section">
+    <div class="eyebrow">Step 1 of 2</div>
+    <h1 style="font-size:2.2rem;">Confirm you're at a valid spot</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">We check your device's live location against CleanCred's list of verified dumping spots. This runs on-device — nothing is guessed or typed in.</p>
+    <div id="locBanner">${r.verifiedSpot ? bannerVerified(r.verifiedSpot) : ''}</div>
+    <button class="btn ${r.verifiedSpot?'secondary':'signal'}" id="checkLocBtn" style="margin-top:6px;">${r.verifiedSpot ? 'Re-check location' : 'Check my location'}</button>
+  </section>
+
+  <hr class="rule">
+
+  <section class="section">
+    <div class="eyebrow">Step 2 of 2</div>
+    <h1 style="font-size:2.2rem;">Film the drop, live</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">${r.verifiedSpot ? 'Point your camera at the bin as you drop your trash in. Recording happens right here — there is no option to upload a file from your gallery.' : 'Verify your location above to unlock the camera.'}</p>
+
+    <div id="camArea" style="margin-top:16px;"></div>
+  </section>
+  `;
+}
+function bannerVerified(spot){
+  return `<div class="banner ok"><strong>Location verified</strong> — you're at <strong>${esc(spot.name)}</strong> (${Math.round(spot.dist)} m away). You're clear to record.</div>`;
+}
+
+function bindView(view){
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.addEventListener('click', ()=> setView(b.dataset.go));
+  });
+  if(view==='mission'){ /* nothing extra */ }
+  if(view==='record') bindRecord();
+  if(view==='account') bindAccount();
+  if(view==='request-spot') bindRequestSpot();
+  if(view==='businesses') bindBusinesses();
+  if(view==='partner') bindPartner();
+  if(view==='donate') bindDonate();
+}
+
+/* ---- record logic ---- */
+function bindRecord(){
+  const p = currentProfile();
+  if(!p) return;
+  const btn = document.getElementById('checkLocBtn');
+  if(btn) btn.addEventListener('click', checkLocation);
+  renderCamArea();
+}
+function checkLocation(){
+  const banner = document.getElementById('locBanner');
+  if(!navigator.geolocation){
+    banner.innerHTML = `<div class="banner err">Your browser doesn't support location services, so we can't verify a spot here.</div>`;
+    return;
+  }
+  banner.innerHTML = `<div class="banner warn">Getting your location…</div>`;
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude, longitude} = pos.coords;
+    let best=null, bestDist=Infinity;
+    state.spots.approved.forEach(s=>{
+      const d = haversineMeters(latitude, longitude, s.lat, s.lng);
+      if(d < bestDist){ bestDist=d; best=s; }
+    });
+    if(best && bestDist <= best.radius){
+      state.record.verifiedSpot = {...best, dist:bestDist};
+      banner.innerHTML = bannerVerified(state.record.verifiedSpot);
+      document.getElementById('checkLocBtn').textContent = 'Re-check location';
+      document.getElementById('checkLocBtn').classList.remove('signal');
+      document.getElementById('checkLocBtn').classList.add('secondary');
+      renderCamArea();
+    } else {
+      state.record.verifiedSpot = null;
+      const nearestTxt = best ? ` The nearest one, ${esc(best.name)}, is ${Math.round(bestDist)} m away.` : '';
+      banner.innerHTML = `<div class="banner err"><strong>No verified spot here.</strong>${nearestTxt} Head to a listed spot, or add this location on the "Request a spot" page.</div>`;
+      renderCamArea();
+    }
+  }, err=>{
+    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(err.message)}). Location access needs to be allowed for CleanCred to verify a spot.</div>`;
+  }, {enableHighAccuracy:true, timeout:12000});
+}
+
+function renderCamArea(){
+  const area = document.getElementById('camArea');
+  if(!area) return;
+  const r = state.record;
+  if(!r.verifiedSpot){
+    area.innerHTML = `<p class="hint">Camera unlocks once your location is verified above.</p>`;
+    return;
+  }
+  if(r.blobUrl){
+    area.innerHTML = `
+      <div class="camwrap"><video src="${r.blobUrl}" controls playsinline></video></div>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <button class="btn signal" id="submitDropBtn">Submit for credits</button>
+        <button class="btn secondary" id="retakeBtn">Retake</button>
+      </div>
+    `;
+    document.getElementById('submitDropBtn').addEventListener('click', submitDrop);
+    document.getElementById('retakeBtn').addEventListener('click', ()=>{ r.blobUrl=null; renderCamArea(); });
+    return;
+  }
+  if(!r.stream){
+    area.innerHTML = `<button class="btn signal" id="openCamBtn">Turn on camera</button><p class="hint" style="margin-top:8px;">We'll ask your browser for camera permission. There is no file picker anywhere in this flow, by design.</p>`;
+    document.getElementById('openCamBtn').addEventListener('click', openCamera);
+    return;
+  }
+  area.innerHTML = `
+    <div class="camwrap">
+      <video id="liveVideo" autoplay muted playsinline></video>
+      ${r.recording ? `<div class="recdot"><span class="dot"></span>REC</div>` : ''}
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+      ${r.recording
+        ? `<button class="btn clay" id="stopRecBtn">Stop recording</button>`
+        : `<button class="btn signal" id="startRecBtn">Start recording</button>`}
+      <button class="btn secondary" id="closeCamBtn">Turn off camera</button>
+    </div>
+    <p class="hint" style="margin-top:8px;">Recording stops automatically after 8 seconds.</p>
+  `;
+  const v = document.getElementById('liveVideo');
+  v.srcObject = r.stream;
+  if(r.recording){
+    document.getElementById('stopRecBtn').addEventListener('click', stopRecording);
+  }else{
+    document.getElementById('startRecBtn').addEventListener('click', startRecording);
+  }
+  document.getElementById('closeCamBtn').addEventListener('click', ()=>{ stopCamera(); renderCamArea(); });
+}
+
+async function openCamera(){
+  const area = document.getElementById('camArea');
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    state.record.stream = stream;
+    renderCamArea();
+  }catch(e){
+    area.innerHTML = `<div class="banner err">Camera access was blocked or isn't available here (${esc(e.message)}). CleanCred only accepts live camera recordings, so without camera access we can't verify a drop.</div>
+    <button class="btn secondary" id="retryCamBtn" style="margin-top:10px;">Try again</button>`;
+    document.getElementById('retryCamBtn').addEventListener('click', openCamera);
+  }
+}
+function startRecording(){
+  const r = state.record;
+  if(!r.stream) return;
+  r.chunks = [];
+  let mime = 'video/webm';
+  if(!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime))){
+    mime = '';
+  }
+  try{
+    r.recorder = mime ? new MediaRecorder(r.stream, {mimeType:mime}) : new MediaRecorder(r.stream);
+  }catch(e){
+    r.recorder = new MediaRecorder(r.stream);
+  }
+  r.recorder.ondataavailable = ev=>{ if(ev.data && ev.data.size>0) r.chunks.push(ev.data); };
+  r.recorder.onstop = ()=>{
+    const blob = new Blob(r.chunks, {type: r.recorder.mimeType || 'video/webm'});
+    r.blobUrl = URL.createObjectURL(blob);
+    r.recording = false;
+    stopCamera(true);
+    renderCamArea();
+  };
+  r.recorder.start();
+  r.recording = true;
+  renderCamArea();
+  r._autoStop = setTimeout(()=>{ if(r.recording) stopRecording(); }, 8000);
+}
+function stopRecording(){
+  const r = state.record;
+  if(r._autoStop) clearTimeout(r._autoStop);
+  if(r.recorder && r.recorder.state !== 'inactive') r.recorder.stop();
+}
+function stopCamera(keepBlob){
+  const r = state.record;
+  if(r.stream){
+    r.stream.getTracks().forEach(t=>t.stop());
+  }
+  r.stream = null;
+  r.recorder = null;
+  r.recording = false;
+  if(!keepBlob){ /* keep blobUrl if we just finished recording */ }
+}
+async function submitDrop(){
+  const p = currentProfile();
+  if(!p) return;
+  const earned = 8 + Math.floor(Math.random()*8); // 8-15 credits
+  p.credits += earned;
+  p.history.unshift({ type:'earn', desc:`Verified drop at ${state.record.verifiedSpot.name}`, amount:earned, date:new Date().toISOString() });
+  await persistProfiles();
+  state.record.blobUrl = null;
+  state.record.verifiedSpot = null;
+  const area = document.getElementById('camArea');
+  area.innerHTML = `<div class="banner ok"><strong>+${earned} credits added.</strong> Nice work — check your account for the updated balance.</div>
+    <button class="btn signal" data-go="account" style="margin-top:10px;">View my account</button>`;
+  area.querySelector('[data-go]').addEventListener('click', ()=> setView('account'));
+  document.getElementById('locBanner').innerHTML='';
+  document.getElementById('checkLocBtn').textContent = 'Check my location';
+  document.getElementById('checkLocBtn').classList.add('signal');
+  document.getElementById('checkLocBtn').classList.remove('secondary');
+}
+
+/* ================= ACCOUNT ================= */
+function viewAccount(){
+  const p = currentProfile();
+  if(!p){
+    return `
+    <section class="section wrap narrow" style="padding:0;">
+      <div class="eyebrow">My account</div>
+      <h1 style="font-size:2.2rem;">Log in or create an account</h1>
+      <p class="lede" style="margin-top:10px;">Pick a username. This is a lightweight demo login stored only on this device — no password needed.</p>
+      <div class="card" style="margin-top:18px;">
+        <div class="field">
+          <label for="usernameInput">Username</label>
+          <input id="usernameInput" placeholder="e.g. neil_r" autocomplete="off">
+        </div>
+        <button class="btn signal block" id="loginBtn">Continue</button>
+        <div id="loginMsg"></div>
+      </div>
+    </section>`;
+  }
+  const history = p.history.slice(0,20);
+  return `
+  <section class="section">
+    <div class="eyebrow">My account</div>
+    <h1 style="font-size:2.2rem;">Hi, ${esc(state.currentUser)}</h1>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-top:18px;">
+      <div class="credittag"><span class="num">${p.credits}</span><span class="lab">credits<br>available</span></div>
+      <button class="btn secondary" id="logoutBtn">Log out</button>
+    </div>
+  </section>
+  <section class="section">
+    <h3 style="font-size:1.3rem; margin-bottom:8px;">Activity</h3>
+    ${history.length===0 ? `<p class="hint">No activity yet. Record a verified drop to start earning.</p>` : `
+    <div class="histlist">
+      ${history.map(h=>`
+        <div class="histrow">
+          <div>${esc(h.desc)}<div class="when">${fmtDate(h.date)}</div></div>
+          <div class="amt ${h.type==='earn'?'plus':'minus'}">${h.type==='earn'?'+':'-'}${h.amount}</div>
+        </div>
+      `).join('')}
+    </div>`}
+  </section>
+  `;
+}
+function bindAccount(){
+  const loginBtn = document.getElementById('loginBtn');
+  if(loginBtn){
+    loginBtn.addEventListener('click', async ()=>{
+      const name = document.getElementById('usernameInput').value.trim();
+      const msg = document.getElementById('loginMsg');
+      if(!name){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Enter a username to continue.</div>`; return; }
+      if(!state.profiles[name]){
+        state.profiles[name] = { credits:0, history:[] };
+        await persistProfiles();
+      }
+      state.currentUser = name;
+      render();
+    });
+  }
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', ()=>{ state.currentUser = null; render(); });
+  }
+}
+
+/* ================= REQUEST SPOT ================= */
+function viewRequestSpot(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">Request a spot</div>
+    <h1 style="font-size:2.2rem;">Add a dumping point</h1>
+    <p class="lede" style="margin-top:10px;">Know a bin or dumpster that should count for credit? Stand at it, capture your live location, and submit it. New spots become checkable right away so you can verify from there next time.</p>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="field">
+        <label for="spotName">Spot name</label>
+        <input id="spotName" placeholder="e.g. Balmatta bus stand bin">
+      </div>
+      <div class="field">
+        <label for="spotNote">Notes (optional)</label>
+        <textarea id="spotNote" rows="3" placeholder="Anything that helps others find it"></textarea>
+      </div>
+      <div id="spotCoordsMsg" class="hint" style="margin-bottom:12px;">Location not captured yet.</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn secondary" id="captureLocBtn">Use my current location</button>
+        <button class="btn signal" id="submitSpotBtn" disabled>Submit spot</button>
+      </div>
+      <div id="spotMsg"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h3 style="font-size:1.3rem; margin-bottom:10px;">Recently added spots</h3>
+    <div class="spotlist">
+      ${state.spots.approved.slice().reverse().slice(0,8).map(s=>`
+        <div class="spotitem"><span>${esc(s.name)}</span><span class="dist">${s.source==='seed' ? 'seed data' : 'community-added'}</span></div>
+      `).join('')}
+    </div>
+  </section>
+  `;
+}
+function bindRequestSpot(){
+  let captured = null;
+  const coordsMsg = document.getElementById('spotCoordsMsg');
+  const submitBtn = document.getElementById('submitSpotBtn');
+  document.getElementById('captureLocBtn').addEventListener('click', ()=>{
+    if(!navigator.geolocation){ coordsMsg.textContent = "Your browser doesn't support location services."; return; }
+    coordsMsg.textContent = 'Getting your location…';
+    navigator.geolocation.getCurrentPosition(pos=>{
+      captured = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      coordsMsg.textContent = `Captured: ${captured.lat.toFixed(5)}, ${captured.lng.toFixed(5)}`;
+      submitBtn.disabled = false;
+    }, err=>{
+      coordsMsg.textContent = `Couldn't get location (${err.message}).`;
+    }, {enableHighAccuracy:true, timeout:12000});
+  });
+  submitBtn.addEventListener('click', async ()=>{
+    const name = document.getElementById('spotName').value.trim();
+    const msg = document.getElementById('spotMsg');
+    if(!name){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Give the spot a name.</div>`; return; }
+    if(!captured){ msg.innerHTML = `<div class="banner err" style="margin-top:12px;">Capture your location first.</div>`; return; }
+    const spot = {
+      id: 's' + Date.now(),
+      name,
+      lat: captured.lat, lng: captured.lng,
+      radius: 120,
+      source: 'community',
+      submittedBy: state.currentUser || 'anonymous'
+    };
+    state.spots.approved.push(spot);
+    await saveData('spots-db', true, state.spots);
+    msg.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Spot added.</strong> It's live — you can check in from here on the Record page.</div>`;
+    submitBtn.disabled = true;
+    document.getElementById('spotName').value='';
+    document.getElementById('spotNote').value='';
+  });
+}
+
+/* ================= BUSINESSES ================= */
+function viewBusinesses(){
+  const p = currentProfile();
+  return `
+  <section class="section">
+    <div class="eyebrow">Redeem credits</div>
+    <h1 style="font-size:2.2rem;">Spend where it counts</h1>
+    <p class="lede" style="margin-top:10px; max-width:600px;">These local businesses partner with CleanCred to turn your credits into real coupons.</p>
+    ${p ? `<div class="banner ok" style="max-width:400px;">You have <strong>${p.credits} credits</strong> to spend.</div>` : `<div class="banner warn" style="max-width:420px;">Log in on the "My account" page to redeem credits.</div>`}
+    <div class="bizgrid">
+      ${state.businesses.map(b=>`
+        <div class="bizcard">
+          <div class="emoji">${b.emoji}</div>
+          <div class="name">${esc(b.name)}</div>
+          <div class="cat">${esc(b.cat)}</div>
+          <div class="offer">${esc(b.offer)}</div>
+          <div class="cost">${b.cost} credits</div>
+          <button class="btn ${p && p.credits>=b.cost ? 'signal' : 'secondary'}" data-redeem="${b.id}" ${!p || p.credits<b.cost ? 'disabled' : ''}>Redeem</button>
+        </div>
+      `).join('')}
+    </div>
+    <div id="redeemMsg" style="margin-top:16px;"></div>
+  </section>
+  `;
+}
+function bindBusinesses(){
+  document.querySelectorAll('[data-redeem]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const p = currentProfile();
+      const biz = state.businesses.find(b=>b.id===btn.dataset.redeem);
+      if(!p || !biz || p.credits < biz.cost) return;
+      p.credits -= biz.cost;
+      const code = 'CC-' + Math.random().toString(36).slice(2,8).toUpperCase();
+      p.history.unshift({ type:'redeem', desc:`Redeemed at ${biz.name} (code ${code})`, amount:biz.cost, date:new Date().toISOString() });
+      await persistProfiles();
+      document.getElementById('redeemMsg').innerHTML = `<div class="banner ok">Redeemed! Your coupon code for <strong>${esc(biz.name)}</strong> is <strong>${code}</strong>. Show this at checkout.</div>`;
+      render();
+    });
+  });
+}
+
+/* ================= PARTNER ================= */
+function viewPartner(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">For businesses</div>
+    <h1 style="font-size:2.2rem;">Partner with CleanCred</h1>
+    <p class="lede" style="margin-top:10px;">Offer a coupon or discount that CleanCred members can redeem with their credits, and get in front of people who are actively keeping your area clean.</p>
+    <div class="card" style="margin-top:20px;">
+      <div class="field"><label for="pName">Business name</label><input id="pName" placeholder="e.g. Green Leaf Cafe"></div>
+      <div class="field"><label for="pContact">Contact email</label><input id="pContact" type="email" placeholder="owner@business.com"></div>
+      <div class="field"><label for="pCat">Category</label><input id="pCat" placeholder="e.g. Food & drink, retail, services"></div>
+      <div class="field"><label for="pMsg">What offer would you like to give?</label><textarea id="pMsg" rows="3" placeholder="e.g. 10% off, free item with purchase"></textarea></div>
+      <button class="btn signal block" id="partnerSubmitBtn">Submit application</button>
+      <div id="partnerMsg"></div>
+    </div>
+  </section>
+  <section class="section">
+    <p class="hint">${state.partnerApps.length} businesses have applied to partner so far on this preview.</p>
+  </section>
+  `;
+}
+function bindPartner(){
+  document.getElementById('partnerSubmitBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('pName').value.trim();
+    const contact = document.getElementById('pContact').value.trim();
+    const cat = document.getElementById('pCat').value.trim();
+    const msgText = document.getElementById('pMsg').value.trim();
+    const out = document.getElementById('partnerMsg');
+    if(!name || !contact){
+      out.innerHTML = `<div class="banner err" style="margin-top:12px;">Business name and contact email are required.</div>`;
+      return;
+    }
+    state.partnerApps.push({ name, contact, cat, msgText, date:new Date().toISOString() });
+    await saveData('partner-applications', true, state.partnerApps);
+    out.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Thanks — application received.</strong> We'll reach out at ${esc(contact)} about listing your offer.</div>`;
+    ['pName','pContact','pCat','pMsg'].forEach(id=>document.getElementById(id).value='');
+  });
+}
+
+/* ================= DONATE ================= */
+function viewDonate(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">Support us</div>
+    <h1 style="font-size:2.2rem;">Help keep CleanCred running</h1>
+    <p class="lede" style="margin-top:10px;">CleanCred is upkept as a public-good project — hosting, verification checks and partner outreach all cost something. Donations go straight to keeping the site free for everyone throwing trash the right way.</p>
+    <div class="card" style="margin-top:20px;">
+      <div class="field"><label>Amount (₹)</label>
+        <div class="amtgrid">
+          <button class="amtbtn" data-amt="50">₹50</button>
+          <button class="amtbtn" data-amt="150">₹150</button>
+          <button class="amtbtn" data-amt="500">₹500</button>
+          <button class="amtbtn" data-amt="custom">Other</button>
+        </div>
+        <input id="customAmt" type="number" min="1" placeholder="Enter amount" style="display:none;">
+      </div>
+      <div class="field"><label for="dName">Name (optional)</label><input id="dName" placeholder="Anonymous"></div>
+      <div class="field"><label for="dMsg">Message (optional)</label><textarea id="dMsg" rows="2" placeholder="A note to the team"></textarea></div>
+      <button class="btn signal block" id="donateBtn">Donate</button>
+      <p class="hint" style="margin-top:10px;">This preview doesn't connect to a real payment processor — your donation is recorded here to show how the flow would work.</p>
+      <div id="donateMsg"></div>
+    </div>
+  </section>
+  <section class="section">
+    <h3 style="font-size:1.2rem;">Recent supporters</h3>
+    ${state.donations.length===0 ? `<p class="hint">No donations yet — be the first.</p>` : `
+    <div class="histlist">
+      ${state.donations.slice().reverse().slice(0,10).map(d=>`
+        <div class="histrow"><div>${esc(d.name||'Anonymous')}${d.msg? ' — '+esc(d.msg):''}<div class="when">${fmtDate(d.date)}</div></div><div class="amt plus">₹${d.amount}</div></div>
+      `).join('')}
+    </div>`}
+  </section>
+  `;
+}
+function bindDonate(){
+  let chosen = null;
+  document.querySelectorAll('.amtbtn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.amtbtn').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+      const custom = document.getElementById('customAmt');
+      if(b.dataset.amt === 'custom'){
+        custom.style.display='block'; custom.focus(); chosen = null;
+      }else{
+        custom.style.display='none';
+        chosen = parseInt(b.dataset.amt, 10);
+      }
+    });
+  });
+  document.getElementById('donateBtn').addEventListener('click', async ()=>{
+    const custom = document.getElementById('customAmt');
+    let amount = chosen;
+    if(custom.style.display==='block'){ amount = parseInt(custom.value,10); }
+    const out = document.getElementById('donateMsg');
+    if(!amount || amount<=0){
+      out.innerHTML = `<div class="banner err" style="margin-top:12px;">Choose or enter an amount.</div>`;
+      return;
+    }
+    const name = document.getElementById('dName').value.trim();
+    const msgText = document.getElementById('dMsg').value.trim();
+    state.donations.push({ name, msg: msgText, amount, date:new Date().toISOString() });
+    await saveData('donations-log', true, state.donations);
+    out.innerHTML = `<div class="banner ok" style="margin-top:12px;">Thank you${name?', '+esc(name):''} — your ₹${amount} donation was recorded.</div>`;
+    render();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
