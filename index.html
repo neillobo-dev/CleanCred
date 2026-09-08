@@ -163,10 +163,25 @@
   .hero h1{font-size:clamp(2.6rem, 7vw, 4.6rem);}
   .hero .lede{font-size:1.15rem; max-width:640px; color:var(--ink-soft); margin-top:16px;}
   .hero-actions{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap;}
-  .statrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:8px;}
-  .stat{background:var(--panel); padding:18px;}
-  .stat .num{font-family:'Barlow Condensed'; font-weight:900; font-size:2.4rem; color:var(--forest); line-height:1;}
-  .stat .lab{font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+  .statrow{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line);
+    border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-top:32px;
+  }
+  .stat{
+    background:var(--panel); padding:20px 14px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+  }
+  .stat .stat-ic{font-size:1.15rem; line-height:1; opacity:0.85;}
+  .stat .num{font-family:'Barlow Condensed'; font-weight:900; font-size:2rem; color:var(--forest); line-height:1;}
+  .stat .lab{font-size:0.74rem; color:var(--ink-soft); line-height:1.25; max-width:120px;}
+  @media (max-width:760px){
+    .statrow{grid-template-columns:repeat(2,1fr);}
+    .stat:last-child{grid-column:1 / -1;}
+  }
+  @media (max-width:560px){
+    .hero-actions{flex-direction:column; align-items:stretch;}
+    .hero-actions .btn{width:100%;}
+  }
 
   /* record page */
   .camwrap{background:#0E1512; border-radius:var(--radius); overflow:hidden; position:relative; aspect-ratio:4/3; max-width:480px;}
@@ -246,24 +261,39 @@
   .vidsource{font-size:0.78rem; color:var(--moss); font-weight:600;}
   .vidblurb{font-size:0.86rem; color:var(--ink-soft); flex:1; margin:0;}
 
-  /* donor ticker */
-  .donorticker{overflow:hidden; background:var(--forest-dark); border-radius:var(--radius); margin:18px 0 4px; position:relative;}
+  /* live activity feed */
+  .livefeed{
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel);
+    margin:28px 0 4px; overflow:hidden;
+  }
+  .livefeed-label{
+    display:flex; align-items:center; gap:7px; padding:11px 16px 0;
+    font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--moss);
+  }
+  .livefeed-label .live-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--clay); flex:none;
+    box-shadow:0 0 0 3px rgba(196,87,59,0.18); animation:pulseDot 1.7s ease-in-out infinite;
+  }
+  @keyframes pulseDot{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .donorticker{overflow:hidden; position:relative;}
   .donorticker::before, .donorticker::after{content:''; position:absolute; top:0; bottom:0; width:36px; z-index:2; pointer-events:none;}
-  .donorticker::before{left:0; background:linear-gradient(90deg, var(--forest-dark), transparent);}
-  .donorticker::after{right:0; background:linear-gradient(270deg, var(--forest-dark), transparent);}
-  .donorticker-track{display:inline-flex; white-space:nowrap; padding:10px 0; animation:tickerScroll 26s linear infinite;}
+  .donorticker::before{left:0; background:linear-gradient(90deg, var(--panel), transparent);}
+  .donorticker::after{right:0; background:linear-gradient(270deg, var(--panel), transparent);}
+  .donorticker-track{display:inline-flex; white-space:nowrap; padding:9px 0 12px; animation:tickerScroll 30s linear infinite;}
   .donorticker-track:hover{animation-play-state:paused;}
-  .donor-item{display:inline-flex; align-items:center; gap:8px; color:var(--white); font-size:0.86rem; font-weight:600; padding:0 26px; border-right:1px solid rgba(255,255,255,0.15); white-space:nowrap;}
-  .donor-item .dot-live{width:7px; height:7px; border-radius:50%; background:var(--signal); flex:none; box-shadow:0 0 0 3px rgba(232,162,39,0.25);}
+  .donor-item{display:inline-flex; align-items:center; color:var(--ink-soft); font-size:0.84rem; font-weight:600; padding:0 22px; border-right:1px solid var(--line); white-space:nowrap;}
+  .donor-item strong{color:var(--ink);}
   @keyframes tickerScroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
 
   /* leaderboard */
-  .lbpicker{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:2px 0 16px;}
-  .lbgrid{display:grid; grid-template-columns:1fr; gap:30px; margin-top:6px;}
+  .lbcard{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px;}
+  .lbcard-head{display:flex; align-items:center; gap:8px; margin-bottom:14px;}
+  .lbcard-head h3{font-size:1.15rem; margin:0;}
+  .lbgrid{display:grid; grid-template-columns:1fr; gap:24px; margin-top:6px;}
   @media (min-width:820px){ .lbgrid{grid-template-columns:1fr 1fr;} }
   .lbtable{width:100%; border-collapse:collapse; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
-  .lbtable th{background:var(--forest); color:var(--white); text-align:left; padding:10px 12px; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;}
-  .lbtable td{padding:10px 12px; border-top:1px solid var(--line); font-size:0.92rem;}
+  .lbtable th{background:var(--panel); color:var(--forest-dark); text-align:left; padding:10px 12px; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; border-bottom:2px solid var(--forest);}
+  .lbtable td{padding:10px 12px; border-top:1px solid var(--line); font-size:0.9rem;}
   .lbtable tr.me{background:#FBF1DD;}
   .lbrank{font-family:'Barlow Condensed'; font-weight:900; color:var(--moss); font-size:1.15rem;}
   .lbname{font-weight:700;}
@@ -504,6 +534,147 @@ function fmtDate(iso){
 }
 function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function currentProfile(){ return state.currentUser ? state.profiles[state.currentUser] : null; }
+
+/* ---------------- mobile-safe camera + location helpers ----------------
+   Mobile browsers (iOS Safari, Android Chrome/WebView) are much stricter than
+   desktop about camera/location: both APIs are only exposed on secure origins
+   (https, or localhost), navigator.mediaDevices can be entirely undefined on
+   an insecure origin instead of throwing a clear error, GPS fixes indoors can
+   time out under enableHighAccuracy, and <video> elements need an explicit
+   play() call after srcObject is set or the preview can stay blank on iOS. */
+function pickRecorderMimeType(){
+  // iOS/iPadOS Safari has never supported video/webm for MediaRecorder — it
+  // only records mp4. Checking webm first and giving up on failure (as the
+  // original code did) silently produced a recorder with no mimeType hint,
+  // which happened to still work in some Safari versions but not others.
+  // Explicitly trying the mp4 variants Safari does support first avoids
+  // relying on that undefined behavior.
+  const candidates = [
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+  ];
+  if(window.MediaRecorder && MediaRecorder.isTypeSupported){
+    for(const type of candidates){
+      if(MediaRecorder.isTypeSupported(type)) return type;
+    }
+  }
+  return ''; // let the browser pick its own default
+}
+function isSecureContextForMedia(){
+  // window.isSecureContext is the accurate, spec-defined check (true for
+  // https: and http://localhost, false for plain http:// on a LAN/IP address
+  // — which is the single most common reason "it works on my laptop but not
+  // my phone" happens, since phones are almost always hitting the site over
+  // a non-localhost address).
+  return typeof window.isSecureContext === 'boolean' ? window.isSecureContext : location.protocol === 'https:';
+}
+function mediaUnavailableReason(){
+  if(!isSecureContextForMedia()){
+    return "Camera and location only work over a secure (https://) connection. This page is loaded over an insecure connection, which mobile browsers block automatically.";
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return "This browser doesn't expose camera access here. Try the latest Chrome or Safari, and make sure the page isn't opened inside an app's built-in browser/webview with camera access disabled.";
+  }
+  return null;
+}
+async function getCameraStreamSafe(facingMode){
+  const blockedReason = mediaUnavailableReason();
+  if(blockedReason) throw new Error(blockedReason);
+  // Use {ideal:...} rather than a bare string: some mobile browsers treat a
+  // bare facingMode string as a hard (exact) requirement and throw
+  // OverconstrainedError on devices that don't expose an exact match, even
+  // though a close-enough camera exists.
+  const attempts = [
+    { video:{ facingMode:{ ideal: facingMode } }, audio:false },
+    { video:true, audio:false } // last-resort fallback: any camera at all
+  ];
+  let lastErr;
+  for(const constraints of attempts){
+    try{
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    }catch(e){ lastErr = e; }
+  }
+  throw lastErr;
+}
+function attachStreamToVideo(videoEl, stream){
+  if(!videoEl) return;
+  videoEl.srcObject = stream;
+  // On iOS Safari especially, autoplay set via an innerHTML string is not
+  // always honored reliably — explicitly calling play() (and swallowing the
+  // benign AbortError some browsers throw if playback was already starting)
+  // makes the live preview show up consistently.
+  const p = videoEl.play();
+  if(p && typeof p.catch === 'function') p.catch(()=>{});
+}
+function locationUnavailableReason(){
+  if(!navigator.geolocation) return "Your browser doesn't support location services, so we can't verify a spot here.";
+  if(!isSecureContextForMedia()) return "Location access only works over a secure (https://) connection. This page is loaded over an insecure connection, which mobile browsers block automatically.";
+  return null;
+}
+// err.name is the standard DOMException name getUserMedia rejects with.
+// err.message on its own is often blank or a low-level string like
+// "Permission denied" that doesn't tell a mobile user what to actually do
+// about it, so map the known names to concrete next steps instead.
+function friendlyCameraError(err){
+  const name = err && err.name;
+  if(name === 'NotAllowedError' || name === 'PermissionDeniedError'){
+    return "Camera access was denied. On iPhone: Settings > Safari (or your browser app) > Camera, and allow it for this site. On Android: tap the lock icon in the address bar > Permissions > Camera > Allow. Then reload the page and try again.";
+  }
+  if(name === 'NotFoundError' || name === 'DevicesNotFoundError'){
+    return "No usable camera was found on this device.";
+  }
+  if(name === 'NotReadableError' || name === 'TrackStartError'){
+    return "The camera is already in use by another app. Close any other app or tab using the camera and try again.";
+  }
+  if(name === 'OverconstrainedError' || name === 'ConstraintNotSatisfiedError'){
+    return "Couldn't get a compatible camera on this device. Try a different browser.";
+  }
+  if(name === 'SecurityError'){
+    return "Camera access is blocked because this page isn't loaded over a secure https:// connection.";
+  }
+  return (err && err.message) || "Camera access failed for an unknown reason.";
+}
+// Surfaces the exact reason camera/location won't work *before* the person
+// taps anything — on mobile the most common failure (insecure origin, e.g.
+// testing over http://192.168.x.x instead of https://) otherwise gives no
+// visible sign anything is wrong until they've already tried and failed.
+function mediaEnvWarningBanner(){
+  const reason = mediaUnavailableReason() || locationUnavailableReason();
+  if(!reason) return '';
+  return `<div class="banner warn" style="margin-bottom:14px;"><strong>Heads up:</strong> ${esc(reason)}</div>`;
+}
+function friendlyGeoError(err){
+  // err.code: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+  if(err.code === 1) return "Location access was denied. Enable location for this site in your phone's browser settings, then try again.";
+  if(err.code === 3) return "Getting your exact location timed out — this is common indoors on mobile. Step outside or near a window and try again.";
+  return err.message || "Location is temporarily unavailable.";
+}
+/* Tries a high-accuracy GPS fix first (best for confirming you're standing at
+   a spot); if that times out or errors, retries once with lower accuracy,
+   which uses network/Wi-Fi based positioning and succeeds far more often on
+   mobile indoors. onStatus(text) is called with progress messages. */
+function getPositionSafe(onSuccess, onError, onStatus){
+  const reason = locationUnavailableReason();
+  if(reason){ onError({code:0, message:reason}); return; }
+  if(onStatus) onStatus('Getting your location…');
+  navigator.geolocation.getCurrentPosition(
+    onSuccess,
+    err=>{
+      if(err.code === 3){
+        if(onStatus) onStatus('Still looking for a signal — trying a faster, lower-accuracy fix…');
+        navigator.geolocation.getCurrentPosition(onSuccess, err2=>onError(err2), {
+          enableHighAccuracy:false, timeout:15000, maximumAge:60000
+        });
+      } else {
+        onError(err);
+      }
+    },
+    {enableHighAccuracy:true, timeout:10000, maximumAge:0}
+  );
+}
 async function persistProfiles(){
   await saveData('profiles', false, state.profiles);
   await syncLeaderboard();
@@ -569,6 +740,7 @@ document.getElementById('navToggle').addEventListener('click', ()=>{
   const p = document.getElementById('navPanel');
   const open = p.classList.toggle('open');
   document.getElementById('navToggle').setAttribute('aria-expanded', open ? 'true':'false');
+  if(open){ window.scrollTo({top:0, behavior:'smooth'}); }
 });
 document.getElementById('logoBtn').addEventListener('click', ()=> { setView('mission'); closeNav(); });
 
@@ -604,22 +776,26 @@ function viewMission(){
     <h1>Trash doesn't clean<br>itself up.</h1>
     <p class="lede">A major problem right now is trash thrown randomly around our locality. We started CleanCred to reward people for throwing trash where it belongs — because a once-a-month cleaning drive can't do what daily habits can.</p>
 
-    <div class="donorticker" id="donorTicker" aria-label="Live donor and sapling activity">
-      <div class="donorticker-track" id="donorTickerTrack"></div>
-    </div>
-
     <div class="hero-actions">
       <button class="btn signal" data-go="record">Record a drop, earn credits</button>
       <button class="btn secondary" data-go="plant">Plant a sapling</button>
       <button class="btn secondary" data-go="leaderboard">See the leaderboard</button>
       <button class="btn secondary" data-go="businesses">See what credits are worth</button>
     </div>
+
     <div class="statrow">
-      <div class="stat"><div class="num">${state.spots.approved.length}</div><div class="lab">verified dumping spots</div></div>
-      <div class="stat"><div class="num">${state.businesses.length}</div><div class="lab">partnered businesses</div></div>
-      <div class="stat"><div class="num">${Object.keys(state.profiles).length}</div><div class="lab">people earning on this device</div></div>
-      <div class="stat"><div class="num">${state.donations.length}</div><div class="lab">donations received</div></div>
-      <div class="stat"><div class="num">${state.events.reduce((n,e)=>n+((e.attendees||[]).length),0)}</div><div class="lab">saplings captured</div></div>
+      <div class="stat"><span class="stat-ic">📍</span><div class="num">${state.spots.approved.length}</div><div class="lab">Verified spots</div></div>
+      <div class="stat"><span class="stat-ic">🤝</span><div class="num">${state.businesses.length}</div><div class="lab">Partner businesses</div></div>
+      <div class="stat"><span class="stat-ic">👥</span><div class="num">${Object.keys(state.profiles).length}</div><div class="lab">Earning on this device</div></div>
+      <div class="stat"><span class="stat-ic">💚</span><div class="num">${state.donations.length}</div><div class="lab">Donations received</div></div>
+      <div class="stat"><span class="stat-ic">🌱</span><div class="num">${state.events.reduce((n,e)=>n+((e.attendees||[]).length),0)}</div><div class="lab">Saplings captured</div></div>
+    </div>
+
+    <div class="livefeed" id="donorTicker" aria-label="Live donor and sapling activity">
+      <div class="livefeed-label"><span class="live-dot"></span>Live activity</div>
+      <div class="donorticker">
+        <div class="donorticker-track" id="donorTickerTrack"></div>
+      </div>
     </div>
   </section>
 
@@ -658,12 +834,12 @@ function buildDonorFeedItems(){
   const items = [];
   state.donations.forEach(d=>{
     if(!d.date) return;
-    items.push({ date:d.date, text:`${esc(d.name||'Anonymous')} donated ₹${d.amount}` });
+    items.push({ date:d.date, text:`<strong>${esc(d.name||'Anonymous')}</strong> donated ₹${d.amount}` });
   });
   state.events.forEach(ev=>{
     (ev.attendees||[]).forEach(a=>{
       if(a && typeof a === 'object' && a.user && a.date){
-        items.push({ date:a.date, text:`${esc(a.user)} planted a sapling at ${esc(ev.title)}` });
+        items.push({ date:a.date, text:`<strong>${esc(a.user)}</strong> planted a sapling at ${esc(ev.title)}` });
       }
     });
   });
@@ -675,10 +851,10 @@ function renderDonorTicker(){
   if(!track) return;
   const items = buildDonorFeedItems();
   if(items.length===0){
-    track.innerHTML = `<span class="donor-item"><span class="dot-live"></span>Be the first to donate or plant a sapling — it'll show up here live.</span>`;
+    track.innerHTML = `<span class="donor-item">Be the first to donate or plant a sapling — it'll show up here live.</span>`;
     return;
   }
-  const html = items.map(it=>`<span class="donor-item"><span class="dot-live"></span>${it.text}</span>`).join('');
+  const html = items.map(it=>`<span class="donor-item">${it.text}</span>`).join('');
   track.innerHTML = html + html; // duplicated for a seamless scroll loop
 }
 function startMissionTicker(){
@@ -709,6 +885,7 @@ function viewRecord(){
     <div class="eyebrow">Step 1 of 2</div>
     <h1 style="font-size:2.2rem;">Confirm you're at a valid spot</h1>
     <p class="lede" style="margin-top:10px; max-width:600px;">We check your device's live location against CleanCred's list of verified dumping spots. This runs on-device — nothing is guessed or typed in.</p>
+    ${mediaEnvWarningBanner()}
     <div id="locBanner">${r.verifiedSpot ? bannerVerified(r.verifiedSpot) : ''}</div>
     <button class="btn ${r.verifiedSpot?'secondary':'signal'}" id="checkLocBtn" style="margin-top:6px;">${r.verifiedSpot ? 'Re-check location' : 'Check my location'}</button>
   </section>
@@ -756,12 +933,7 @@ function bindRecord(){
 }
 function checkLocation(){
   const banner = document.getElementById('locBanner');
-  if(!navigator.geolocation){
-    banner.innerHTML = `<div class="banner err">Your browser doesn't support location services, so we can't verify a spot here.</div>`;
-    return;
-  }
-  banner.innerHTML = `<div class="banner warn">Getting your location…</div>`;
-  navigator.geolocation.getCurrentPosition(pos=>{
+  getPositionSafe(pos=>{
     const {latitude, longitude} = pos.coords;
     let best=null, bestDist=Infinity;
     state.spots.approved.forEach(s=>{
@@ -782,8 +954,10 @@ function checkLocation(){
       renderCamArea();
     }
   }, err=>{
-    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(err.message)}). Location access needs to be allowed for CleanCred to verify a spot.</div>`;
-  }, {enableHighAccuracy:true, timeout:12000});
+    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(friendlyGeoError(err))}).</div>`;
+  }, statusText=>{
+    banner.innerHTML = `<div class="banner warn">${esc(statusText)}</div>`;
+  });
 }
 
 function renderCamArea(){
@@ -825,7 +999,7 @@ function renderCamArea(){
     <p class="hint" style="margin-top:8px;">Recording stops automatically after 8 seconds.</p>
   `;
   const v = document.getElementById('liveVideo');
-  v.srcObject = r.stream;
+  attachStreamToVideo(v, r.stream);
   if(r.recording){
     document.getElementById('stopRecBtn').addEventListener('click', stopRecording);
   }else{
@@ -837,11 +1011,11 @@ function renderCamArea(){
 async function openCamera(){
   const area = document.getElementById('camArea');
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    const stream = await getCameraStreamSafe('environment');
     state.record.stream = stream;
     renderCamArea();
   }catch(e){
-    area.innerHTML = `<div class="banner err">Camera access was blocked or isn't available here (${esc(e.message)}). CleanCred only accepts live camera recordings, so without camera access we can't verify a drop.</div>
+    area.innerHTML = `<div class="banner err">${esc(friendlyCameraError(e))}</div>
     <button class="btn secondary" id="retryCamBtn" style="margin-top:10px;">Try again</button>`;
     document.getElementById('retryCamBtn').addEventListener('click', openCamera);
   }
@@ -850,10 +1024,7 @@ function startRecording(){
   const r = state.record;
   if(!r.stream) return;
   r.chunks = [];
-  let mime = 'video/webm';
-  if(!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime))){
-    mime = '';
-  }
+  const mime = pickRecorderMimeType();
   try{
     r.recorder = mime ? new MediaRecorder(r.stream, {mimeType:mime}) : new MediaRecorder(r.stream);
   }catch(e){
@@ -965,6 +1136,7 @@ function renderPlantCaptureFlow(){
     <div class="eyebrow">Capturing: ${esc(ev.title)}</div>
     <h2 style="font-size:1.7rem;">Step 1 — confirm you're on site</h2>
     <p class="lede" style="margin-top:8px; max-width:600px;">We check your device's live location against this drive's spot.</p>
+    ${mediaEnvWarningBanner()}
     <div id="plantLocBanner">${pc.verifiedEvent ? bannerPlantVerified(pc.verifiedEvent) : ''}</div>
     <button class="btn ${pc.verifiedEvent?'secondary':'signal'}" id="checkPlantLocBtn" style="margin-top:6px;">${pc.verifiedEvent ? 'Re-check location' : 'Check my location'}</button>
 
@@ -999,12 +1171,7 @@ function checkPlantLocation(){
   const banner = document.getElementById('plantLocBanner');
   const ev = state.events.find(e=>e.id===state.plantCapture.eventId);
   if(!ev || !banner) return;
-  if(!navigator.geolocation){
-    banner.innerHTML = `<div class="banner err">Your browser doesn't support location services, so we can't verify this spot.</div>`;
-    return;
-  }
-  banner.innerHTML = `<div class="banner warn">Getting your location…</div>`;
-  navigator.geolocation.getCurrentPosition(pos=>{
+  getPositionSafe(pos=>{
     const {latitude, longitude} = pos.coords;
     const dist = haversineMeters(latitude, longitude, ev.lat, ev.lng);
     if(dist <= ev.radius){
@@ -1021,8 +1188,10 @@ function checkPlantLocation(){
       renderPlantCamArea();
     }
   }, err=>{
-    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(err.message)}). Location access needs to be allowed to verify you're on site.</div>`;
-  }, {enableHighAccuracy:true, timeout:12000});
+    banner.innerHTML = `<div class="banner err">We couldn't get your location (${esc(friendlyGeoError(err))}).</div>`;
+  }, statusText=>{
+    banner.innerHTML = `<div class="banner warn">${esc(statusText)}</div>`;
+  });
 }
 function renderPlantCamArea(){
   const area = document.getElementById('plantCamArea');
@@ -1063,7 +1232,7 @@ function renderPlantCamArea(){
     <p class="hint" style="margin-top:8px;">Recording stops automatically after 8 seconds.</p>
   `;
   const v = document.getElementById('livePlantVideo');
-  v.srcObject = pc.stream;
+  attachStreamToVideo(v, pc.stream);
   if(pc.recording){
     document.getElementById('stopPlantRecBtn').addEventListener('click', stopPlantRecording);
   }else{
@@ -1074,11 +1243,11 @@ function renderPlantCamArea(){
 async function openPlantCamera(){
   const area = document.getElementById('plantCamArea');
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    const stream = await getCameraStreamSafe('environment');
     state.plantCapture.stream = stream;
     renderPlantCamArea();
   }catch(e){
-    area.innerHTML = `<div class="banner err">Camera access was blocked or isn't available here (${esc(e.message)}). CleanCred only accepts live camera recordings.</div>
+    area.innerHTML = `<div class="banner err">${esc(friendlyCameraError(e))}</div>
     <button class="btn secondary" id="retryPlantCamBtn" style="margin-top:10px;">Try again</button>`;
     document.getElementById('retryPlantCamBtn').addEventListener('click', openPlantCamera);
   }
@@ -1087,8 +1256,7 @@ function startPlantRecording(){
   const pc = state.plantCapture;
   if(!pc.stream) return;
   pc.chunks = [];
-  let mime = 'video/webm';
-  if(!(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime))){ mime = ''; }
+  const mime = pickRecorderMimeType();
   try{
     pc.recorder = mime ? new MediaRecorder(pc.stream, {mimeType:mime}) : new MediaRecorder(pc.stream);
   }catch(e){
@@ -1165,8 +1333,8 @@ function viewLeaderboard(){
       : (p.homeState ? '' : `<div class="banner warn" style="max-width:460px;">Add your state on "My account" to show up on the state leaderboard.</div>`)}
 
     <div class="lbgrid">
-      <div>
-        <h3 style="font-size:1.2rem; margin-bottom:10px;">🇮🇳 National</h3>
+      <div class="lbcard">
+        <div class="lbcard-head"><h3>🇮🇳 National</h3></div>
         ${national.length===0 ? `<p class="hint">No one on the leaderboard yet — be the first to earn credits.</p>` : `
         <table class="lbtable">
           <thead><tr><th>#</th><th>Citizen</th><th>State</th><th style="text-align:right;">Credits</th></tr></thead>
@@ -1175,10 +1343,11 @@ function viewLeaderboard(){
           </tbody>
         </table>`}
       </div>
-      <div>
-        <h3 style="font-size:1.2rem; margin-bottom:10px;">📍 By state</h3>
-        <div class="lbpicker">
-          <select id="lbStateSelect" style="min-width:220px;">
+      <div class="lbcard">
+        <div class="lbcard-head"><h3>📍 By state</h3></div>
+        <div class="field" style="max-width:280px;">
+          <label for="lbStateSelect">Choose a state</label>
+          <select id="lbStateSelect">
             <option value="">Choose a state…</option>
             ${INDIA_STATES.map(s=>`<option value="${esc(s)}" ${s===selectedState?'selected':''}>${esc(s)}</option>`).join('')}
           </select>
@@ -1671,6 +1840,7 @@ function viewIdCard(){
     <div class="eyebrow">Digital ID card</div>
     <h1 style="font-size:2.2rem;">Create your CleanCred ID</h1>
     <p class="lede" style="margin-top:10px;">We need your name, date of birth, state and a live photo from your <strong>front camera</strong> — no photo uploads accepted, so the card always matches the person holding it.</p>
+    ${mediaEnvWarningBanner()}
     <div class="card" style="margin-top:18px;">
       <div class="field"><label for="idNameInput">Full name</label><input id="idNameInput" placeholder="As you'd like it to appear" value="${esc(c.name || state.currentUser || '')}"></div>
       <div class="field"><label for="idDobInput">Date of birth</label><input id="idDobInput" type="date" value="${esc(c.dob || '')}"></div>
@@ -1729,7 +1899,7 @@ function bindIdCard(){
   const retakeBtn = document.getElementById('idRetakeBtn');
   if(retakeBtn) retakeBtn.addEventListener('click', ()=>{ state.idcardCapture.photoData = null; renderIdCamArea(); });
   const v = document.getElementById('idLiveVideo');
-  if(v && state.idcardCapture.stream) v.srcObject = state.idcardCapture.stream;
+  if(v && state.idcardCapture.stream) attachStreamToVideo(v, state.idcardCapture.stream);
   const genBtn = document.getElementById('generateIdCardBtn');
   if(genBtn) genBtn.addEventListener('click', saveIdCard);
 }
@@ -1738,7 +1908,7 @@ function renderIdCamArea(){
   if(!area) return;
   area.innerHTML = renderIdCamAreaHTML(state.idcardCapture.photoData);
   const v = document.getElementById('idLiveVideo');
-  if(v && state.idcardCapture.stream) v.srcObject = state.idcardCapture.stream;
+  if(v && state.idcardCapture.stream) attachStreamToVideo(v, state.idcardCapture.stream);
   const captureBtn = document.getElementById('idCaptureBtn');
   if(captureBtn) captureBtn.addEventListener('click', captureIdPhoto);
   const closeBtn = document.getElementById('idCloseCamBtn');
@@ -1751,11 +1921,11 @@ function renderIdCamArea(){
 async function openIdCardCamera(){
   const area = document.getElementById('idCamArea');
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
+    const stream = await getCameraStreamSafe('user');
     state.idcardCapture.stream = stream;
     renderIdCamArea();
   }catch(e){
-    area.innerHTML = `<div class="banner err">Front camera access was blocked or isn't available here (${esc(e.message)}). CleanCred ID cards need a live front-camera photo, so we can't continue without it.</div>
+    area.innerHTML = `<div class="banner err">${esc(friendlyCameraError(e))}</div>
     <button class="btn secondary" id="idRetryCamBtn" style="margin-top:10px;">Try again</button>`;
     document.getElementById('idRetryCamBtn').addEventListener('click', openIdCardCamera);
   }
@@ -1842,15 +2012,15 @@ function bindRequestSpot(){
   const coordsMsg = document.getElementById('spotCoordsMsg');
   const submitBtn = document.getElementById('submitSpotBtn');
   document.getElementById('captureLocBtn').addEventListener('click', ()=>{
-    if(!navigator.geolocation){ coordsMsg.textContent = "Your browser doesn't support location services."; return; }
-    coordsMsg.textContent = 'Getting your location…';
-    navigator.geolocation.getCurrentPosition(pos=>{
+    getPositionSafe(pos=>{
       captured = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       coordsMsg.textContent = `Captured: ${captured.lat.toFixed(5)}, ${captured.lng.toFixed(5)}`;
       submitBtn.disabled = false;
     }, err=>{
-      coordsMsg.textContent = `Couldn't get location (${err.message}).`;
-    }, {enableHighAccuracy:true, timeout:12000});
+      coordsMsg.textContent = `Couldn't get location (${friendlyGeoError(err)}).`;
+    }, statusText=>{
+      coordsMsg.textContent = statusText;
+    });
   });
   submitBtn.addEventListener('click', async ()=>{
     const name = document.getElementById('spotName').value.trim();
