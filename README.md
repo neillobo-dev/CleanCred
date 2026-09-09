@@ -53,4 +53,4 @@ To ensure authenticity and prevent cheating:
 
 ## 👥 The Team — Spideez
 
-Developed with ❤️ by **Team Spideez** during our first college hackathon! 
+Developed with ❤️ by **Team Spideez** during our first college hackathon!
