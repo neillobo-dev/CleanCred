@@ -274,13 +274,19 @@
   /* watch & earn */
   .vidgrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:18px; margin-top:10px;}
   .vidcard{background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column;}
-  .vidframe-wrap{position:relative; width:100%; padding-bottom:56.25%; background:#0E1512;}
-  .vidframe-inner{position:absolute; inset:0; width:100%; height:100%;}
+  .vidframe-wrap{position:relative; width:100%; aspect-ratio:16/9; background:#0E1512; overflow:hidden;}
+  .vidframe-inner{position:absolute; inset:0; width:100%; height:100%; background:#0E1512;}
   .vidframe-inner iframe{position:absolute; inset:0; width:100% !important; height:100% !important; border:0;}
   .vidbody{padding:16px; display:flex; flex-direction:column; gap:6px; flex:1;}
   .vidtitle{font-weight:700; font-size:1rem; color:var(--forest-dark);}
   .vidsource{font-size:0.78rem; color:var(--moss); font-weight:600;}
   .vidblurb{font-size:0.86rem; color:var(--ink-soft); flex:1; margin:0;}
+  .vidprogress{margin-top:8px;}
+  .vidprogress-bar{height:7px; background:var(--line); border-radius:10px; overflow:hidden;}
+  .vidprogress-fill{height:100%; width:0; background:var(--forest); transition:width .2s ease;}
+  .vidstatus{font-size:0.78rem; color:var(--ink-soft); margin-top:5px;}
+  .adnote{font-size:0.8rem; color:var(--ink-soft); margin-top:8px;}
+
 
   /* live activity feed */
   .livefeed{
@@ -463,6 +469,7 @@ const state = {
   spots: { approved: [] },     // shared
   businesses: [],              // shared
   partnerApps: [],             // shared
+  adApps: [],                  // shared: businesses requesting paid website ads
   donations: [],                // shared
   events: [],                   // shared: upcoming plantation drives
   leaderboard: {},               // shared: mobileNumber -> {id, name, homeState, credits}
@@ -488,10 +495,10 @@ const DEFAULT_SPOTS = [
 const DEFAULT_BUSINESSES = [
   { id:'b1', name:'Green Leaf Cafe', cat:'Food & drink', emoji:'☕', offer:'Free filter coffee with any snack', cost:40 },
   { id:'b2', name:'Coastal Cycles', cat:'Retail', emoji:'🚲', offer:'10% off bike servicing', cost:60 },
-  { id:'b3', name:'Bloom Grocers', cat:'Groceries', emoji:'🥬', offer:'₹50 off a ₹300+ bill', cost:70 },
-  { id:'b4', name:'Sunder Laundry', cat:'Services', emoji:'🧺', offer:'One free wash & fold load', cost:50 },
-  { id:'b5', name:'Pageturner Books', cat:'Retail', emoji:'📚', offer:'₹100 off any paperback', cost:90 },
-  { id:'b6', name:'FitBox Gym', cat:'Fitness', emoji:'🏋️', offer:'One free guest session', cost:80 }
+  { id:'b3', name:'Bloom Grocers', cat:'Groceries', emoji:'🥬', offer:'₹50 off a ₹300+ bill', cost:50 },
+  { id:'b4', name:'Sunder Laundry', cat:'Services', emoji:'🧺', offer:'One free wash & fold load', cost:75 },
+  { id:'b5', name:'Pageturner Books', cat:'Retail', emoji:'📚', offer:'₹100 off any paperback', cost:100 },
+  { id:'b6', name:'FitBox Gym', cat:'Fitness', emoji:'🏋️', offer:'One free guest session', cost:100 }
 ];
 const DEFAULT_EVENTS = [
   { id:'e1', title:'Kadri Hill sapling drive', location:'Kadri Park, Mangaluru', lat:12.8990, lng:74.8480, radius:150,
@@ -512,11 +519,11 @@ const NAV = [
   { id:'learn', label:'Learn & play', sub:'Games that teach sorting' },
   { id:'watch', label:'Watch & earn', sub:'Videos on clean habits' },
   { id:'leaderboard', label:'Leaderboard', sub:'National & state rankings' },
-  { id:'account', label:'My account', sub:'Log in with your Digital ID' },
-  { id:'idcard', label:'Digital ID card', sub:'Your CleanCred member card' },
+  { id:'account', label:'Account & Digital ID', sub:'Log in, register or view your member card' },
   { id:'request-spot', label:'Request a spot', sub:'Add a dumping point' },
-  { id:'businesses', label:'Redeem credits', sub:'Partnered businesses' },
-  { id:'partner', label:'Partner with us', sub:'For businesses' },
+  { id:'businesses', label:'Credit store', sub:'See what your credits are worth' },
+  { id:'partner', label:'Partner with us', sub:'For businesses offering rewards' },
+  { id:'ads', label:'Advertise with us', sub:'Register to buy website ads' },
   { id:'donate', label:'Support us', sub:'Keep it running' }
 ];
 
@@ -563,11 +570,20 @@ const QUIZ_QUESTIONS = [
   { q:'A broken glass bottle should go in the...', options:['Wet waste bin','Dry waste bin, wrapped safely','Hazardous bin'], answer:1 },
   { q:"Why does sorting waste at home actually matter?", options:['It makes recycling and composting far more effective','It has no effect once collected','It only matters for hazardous items'], answer:0 }
 ];
+const CREDIT_CONFIG = {
+  // Store value: 1 CleanCred credit = ₹1 of stated coupon value.
+  creditValueINR: 1,
+  gameRewards: {
+    sortMax: 30,
+    quizMax: 32
+  }
+};
+
 const LEARN_VIDEOS = [
-  { id:'b7GMpjx2jDQ', title:'How Recycling Works', source:'SciShow', credits:15, blurb:"What actually happens after your recyclables leave the bin, from sorting facility to new product." },
-  { id:'cBkBwVFFEWw', title:'How Compost Is Made', source:'Recycle Now', credits:15, blurb:'A short animation walking through how food and garden waste turns into usable compost.' },
-  { id:'0ZiD_Lb3Tm0', title:'Why Waste Segregation Is Important', source:'The Planet Voice', credits:15, blurb:'The case for splitting waste into organic, recyclable and hazardous before it gets collected.' },
-  { id:'ouciXfyt5BU', title:"The 5R's of Waste Management", source:'Kids Play', credits:10, blurb:'Refuse, reduce, reuse, repurpose, recycle: the five habits behind less landfill waste.' }
+  { id:'b7GMpjx2jDQ', title:'How Recycling Works', source:'SciShow', credits:CREDIT_CONFIG.videoReward, blurb:"What actually happens after your recyclables leave the bin, from sorting facility to new product." },
+  { id:'cBkBwVFFEWw', title:'How Compost Is Made', source:'Recycle Now', credits:CREDIT_CONFIG.videoReward, blurb:'A short animation walking through how food and garden waste turns into usable compost.' },
+  { id:'0ZiD_Lb3Tm0', title:'Why Waste Segregation Is Important', source:'The Planet Voice', credits:CREDIT_CONFIG.videoReward, blurb:'The case for splitting waste into organic, recyclable and hazardous before it gets collected.' },
+  { id:'ouciXfyt5BU', title:"The 5R's of Waste Management", source:'Kids Play', credits:CREDIT_CONFIG.videoReward, blurb:'Refuse, reduce, reuse, repurpose, recycle: the five habits behind less landfill waste.' }
 ];
 
 /* ---------------- utilities ---------------- */
@@ -741,10 +757,21 @@ async function init(){
   if(!spots) await saveData('spots-db', true, state.spots);
 
   const bizs = await loadData('businesses-db', true, null);
-  state.businesses = bizs || DEFAULT_BUSINESSES.slice();
-  if(!bizs) await saveData('businesses-db', true, state.businesses);
+  // Normalize the preview's seeded store so the corrected credit values appear
+  // even when an older saved version already exists on this device.
+  if(bizs){
+    state.businesses = DEFAULT_BUSINESSES.map(def=>{
+      const old = bizs.find(b=>b.id===def.id);
+      return old ? {...old, cost:def.cost} : def;
+    });
+    await saveData('businesses-db', true, state.businesses);
+  }else{
+    state.businesses = DEFAULT_BUSINESSES.slice();
+    await saveData('businesses-db', true, state.businesses);
+  }
 
   state.partnerApps = await loadData('partner-applications', true, []);
+  state.adApps = await loadData('ad-applications', true, []);
   state.donations = await loadData('donations-log', true, []);
 
   const evs = await loadData('events-db', true, null);
@@ -773,11 +800,13 @@ function buildNav(){
   });
 }
 function setView(v){
+  if(v !== 'watch') Object.keys(ytPlayers).forEach(id=>{ try{ ytPlayers[id].destroy(); }catch(e){} delete ytPlayers[id]; });
   stopCamera();
   stopPlantCamera();
   stopIdCardCamera();
   stopPoll();
   if(v !== 'learn') state.activeGame = null;
+  if(v === 'idcard') v = 'account';
   state.view = v;
   if(v === 'record'){
     showCaptureAd(()=>{
@@ -818,10 +847,10 @@ function render(){
     watch: viewWatch,
     leaderboard: viewLeaderboard,
     account: viewAccount,
-    idcard: viewIdCard,
     'request-spot': viewRequestSpot,
     businesses: viewBusinesses,
     partner: viewPartner,
+    ads: viewAds,
     donate: viewDonate
   };
   c.innerHTML = (views[state.view] || viewMission)();
@@ -998,10 +1027,10 @@ function bindView(view){
   if(view==='watch') bindWatch();
   if(view==='leaderboard'){ bindLeaderboard(); startLeaderboardPoll(); }
   if(view==='account') bindAccount();
-  if(view==='idcard') bindIdCard();
   if(view==='request-spot') bindRequestSpot();
   if(view==='businesses') bindBusinesses();
   if(view==='partner') bindPartner();
+  if(view==='ads') bindAds();
   if(view==='donate') bindDonate();
 }
 
@@ -1529,14 +1558,14 @@ function learnHub(){
         <div class="gicon">🗑️</div>
         <div class="gtitle">Sort It Right</div>
         <p class="gblurb">Ten items, one at a time. Drop each into wet, dry or hazardous before you second-guess yourself.</p>
-        <div class="greward">Up to 20 credits a round</div>
+        <div class="greward">Up to ${CREDIT_CONFIG.gameRewards.sortMax} credits a round</div>
         <button class="btn signal" data-game="sort">Play</button>
       </div>
       <div class="gamecard">
         <div class="gicon">🧠</div>
         <div class="gtitle">Waste Wise Quiz</div>
         <p class="gblurb">Eight quick questions on segregation, composting and recycling myths.</p>
-        <div class="greward">Up to 24 credits a round</div>
+        <div class="greward">Up to ${CREDIT_CONFIG.gameRewards.quizMax} credits a round</div>
         <button class="btn signal" data-game="quiz">Play</button>
       </div>
       <div class="gamecard soon">
@@ -1615,7 +1644,7 @@ function renderSortGame(){
   return `
   <div class="eyebrow">Sort It Right — item ${g.index+1} of ${g.queue.length}</div>
   <h1 style="font-size:1.9rem;">Where does this go?</h1>
-  <p class="hint">2 credits per correct sort · ${g.score} earned so far</p>
+  <p class="hint">3 credits per correct sort · ${g.score} earned so far</p>
   ${fb}
   <div class="itemcard">
     <div class="em">${item.emoji}</div>
@@ -1633,7 +1662,7 @@ async function answerSort(binId){
   if(!g || g.finished) return;
   const item = g.queue[g.index];
   const correct = item.bin === binId;
-  if(correct){ g.score += 2; g.correct++; }
+  if(correct){ g.score += 3; g.correct++; }
   g.lastResult = { correct, correctBin:item.bin, item };
   g.index++;
   if(g.index >= g.queue.length){
@@ -1669,7 +1698,7 @@ function renderQuizGame(){
   return `
   <div class="eyebrow">Waste Wise Quiz — question ${g.index+1} of ${g.questions.length}</div>
   <h1 style="font-size:1.7rem;">${esc(q.q)}</h1>
-  <p class="hint">3 credits per correct answer · ${g.score} earned so far</p>
+  <p class="hint">4 credits per correct answer · ${g.score} earned so far</p>
   ${fb}
   <div style="max-width:460px; margin-top:14px;">
     ${q.options.map((opt,i)=>`<button class="quizopt" data-qopt="${i}">${esc(opt)}</button>`).join('')}
@@ -1681,7 +1710,7 @@ async function answerQuiz(optIdx){
   if(!g || g.finished) return;
   const q = g.questions[g.index];
   const correct = optIdx === q.answer;
-  if(correct){ g.score += 3; g.correct++; }
+  if(correct){ g.score += 4; g.correct++; }
   g.lastResult = { correct, correctText: q.options[q.answer] };
   g.index++;
   if(g.index >= g.questions.length){
@@ -1714,6 +1743,10 @@ function viewWatch(){
             <div class="vidtitle">${esc(v.title)}</div>
             <div class="vidsource">${esc(v.source)}</div>
             <p class="vidblurb">${esc(v.blurb)}</p>
+            <div class="vidprogress" aria-live="polite">
+              <div class="vidprogress-bar"><div class="vidprogress-fill" id="progress-${v.id}"></div></div>
+              <div class="vidstatus" id="status-${v.id}">${watched ? 'Reward claimed.' : '0% of the video has been watched at normal speed.'}</div>
+            </div>
             <button class="btn ${cls}" id="claim-${v.id}" data-vid="${v.id}" data-credits="${v.credits}" data-state="${watched?'claimed':'locked'}" ${(!p||watched)?'disabled':''}>${watched ? label : `${label} (${v.credits} credits)`}</button>
           </div>
         </div>`;
@@ -1736,6 +1769,8 @@ function loadYTApi(){
   });
 }
 async function bindWatch(){
+  // The reward button is only a claim action. Completion is independently
+  // proven by continuous playback telemetry below.
   document.querySelectorAll('[data-vid]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       if(btn.dataset.state !== 'unlocked') return;
@@ -1745,11 +1780,13 @@ async function bindWatch(){
       if(!p) return;
       p.watched = p.watched || [];
       if(p.watched.includes(vid)) return;
+
       p.watched.push(vid);
       p.credits += credits;
       const video = LEARN_VIDEOS.find(v=>v.id===vid);
       p.history.unshift({ type:'earn', desc:`Watched "${video.title}"`, amount:credits, date:new Date().toISOString() });
       await persistProfiles();
+
       btn.dataset.state = 'claimed';
       btn.disabled = true;
       btn.textContent = 'Claimed ✓';
@@ -1757,35 +1794,160 @@ async function bindWatch(){
       if(num) num.textContent = p.credits;
     });
   });
+
   try{
     await loadYTApi();
   }catch(e){ return; }
+
   LEARN_VIDEOS.forEach(v=>{
     const el = document.getElementById('yt-'+v.id);
     const btn = document.getElementById('claim-'+v.id);
     if(!el || !window.YT) return;
+
+    const tracker = {
+      player: null,
+      duration: 0,
+      lastTime: null,
+      lastWall: null,
+      playing: false,
+      completed: false,
+      // 0.25-second buckets give us substantially finer coverage than
+      // the user's requested one-second guarantee.
+      buckets: new Set(),
+      raf: null,
+      lastUi: 0
+    };
+
+    function resetPlaybackClock(){
+      tracker.lastTime = null;
+      tracker.lastWall = null;
+    }
+
+    function markCovered(from, to){
+      const a = Math.max(0, Math.min(from, to));
+      const b = Math.min(tracker.duration, Math.max(from, to));
+      if(b <= a) return;
+      const first = Math.floor(a / 0.25);
+      const last = Math.ceil(b / 0.25) - 1;
+      for(let i=first; i<=last; i++) tracker.buckets.add(i);
+    }
+
+    function coveredEnough(){
+      if(!tracker.duration || tracker.buckets.size === 0) return false;
+      const bucketCount = Math.ceil(tracker.duration / 0.25);
+      let covered = 0;
+      for(let i=0;i<bucketCount;i++) if(tracker.buckets.has(i)) covered++;
+      // Allow only a tiny terminal rounding tolerance.
+      return covered >= Math.max(0, bucketCount - 2);
+    }
+
+    function updateUI(){
+      const progress = document.getElementById('progress-'+v.id);
+      const status = document.getElementById('status-'+v.id);
+      const duration = tracker.duration || (tracker.player && tracker.player.getDuration ? tracker.player.getDuration() : 0);
+      const pct = duration ? Math.min(100, (tracker.buckets.size / Math.ceil(duration / 0.25)) * 100) : 0;
+      if(progress) progress.style.width = pct.toFixed(2) + '%';
+      if(status){
+        if(btn && btn.dataset.state === 'claimed') status.textContent = 'Reward claimed.';
+        else if(tracker.completed) status.textContent = 'Complete — you watched every part at 1×. Claim your credits.';
+        else status.textContent = `${Math.floor(pct)}% of the video has been watched at normal speed.`;
+      }
+    }
+
+    function tick(){
+      if(!tracker.player) return;
+      try{
+        const now = performance.now();
+        const t = tracker.player.getCurrentTime();
+        const stateNow = tracker.player.getPlayerState();
+        const rate = tracker.player.getPlaybackRate();
+
+        if(stateNow === YT.PlayerState.PLAYING && rate === 1 && tracker.lastTime !== null && tracker.lastWall !== null){
+          const wallDelta = (now - tracker.lastWall) / 1000;
+          const mediaDelta = t - tracker.lastTime;
+          // Normal playback should advance at roughly the same rate as wall time.
+          // Large jumps are seeks/loads and never count as watched.
+          if(mediaDelta >= 0 && mediaDelta <= Math.max(0.75, wallDelta * 1.75)){
+            markCovered(tracker.lastTime, t);
+          }
+        }
+
+        if(stateNow === YT.PlayerState.PLAYING && rate === 1){
+          tracker.lastTime = t;
+          tracker.lastWall = now;
+        }else{
+          resetPlaybackClock();
+        }
+
+        if(now - tracker.lastUi > 250){
+          tracker.lastUi = now;
+          updateUI();
+        }
+
+        if(stateNow === YT.PlayerState.ENDED && coveredEnough() && !tracker.completed){
+          tracker.completed = true;
+          if(btn && btn.dataset.state === 'locked'){
+            btn.dataset.state = 'unlocked';
+            btn.disabled = false;
+            btn.classList.remove('secondary');
+            btn.classList.add('signal');
+            btn.textContent = `Claim ${v.credits} credits`;
+          }
+          updateUI();
+        }
+      }catch(e){}
+      tracker.raf = requestAnimationFrame(tick);
+    }
+
     try{
-      ytPlayers[v.id] = new YT.Player(el, {
+      tracker.player = new YT.Player(el, {
         videoId: v.id,
         width: '100%',
         height: '100%',
-        playerVars: { rel:0, modestbranding:1, playsinline:1 },
+        playerVars: {
+          rel:0,
+          modestbranding:1,
+          playsinline:1,
+          enablejsapi:1,
+          origin: window.location.origin
+        },
         events: {
-          onStateChange: (ev)=>{
+          onReady: ev=>{
+            tracker.duration = ev.target.getDuration() || 0;
+            updateUI();
+            if(tracker.raf) cancelAnimationFrame(tracker.raf);
+            tracker.raf = requestAnimationFrame(tick);
+          },
+          onPlaybackRateChange: ev=>{
+            // Any non-1× segment is ignored. The user can still change speed,
+            // but those seconds never enter the coverage set.
+            resetPlaybackClock();
+            updateUI();
+          },
+          onStateChange: ev=>{
+            if(ev.data === YT.PlayerState.PLAYING){
+              tracker.duration = tracker.player.getDuration() || tracker.duration;
+              resetPlaybackClock();
+            }else{
+              resetPlaybackClock();
+            }
             if(ev.data === YT.PlayerState.ENDED){
-              const b = document.getElementById('claim-'+v.id);
-              if(b && b.dataset.state === 'locked'){
-                b.dataset.state = 'unlocked';
-                b.disabled = false;
-                b.classList.remove('secondary');
-                b.classList.add('signal');
-                b.textContent = `Claim ${v.credits} credits`;
+              if(coveredEnough()){
+                tracker.completed = true;
+                if(btn && btn.dataset.state === 'locked'){
+                  btn.dataset.state = 'unlocked';
+                  btn.disabled = false;
+                  btn.classList.remove('secondary');
+                  btn.classList.add('signal');
+                  btn.textContent = `Claim ${v.credits} credits`;
+                }
               }
+              updateUI();
             }
           }
         }
       });
-    }catch(e){ /* player failed to init, video still playable via default iframe fallback */ }
+    }catch(e){ /* Player failed to initialize. */ }
   });
 }
 
@@ -1802,9 +1964,13 @@ function viewAccount(){
     <h1 style="font-size:2.2rem;">Hi, ${esc(displayName(p))}</h1>
     <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-top:18px;">
       <div class="credittag"><span class="num">${p.credits}</span><span class="lab">credits<br>available</span></div>
-      <button class="btn secondary" data-go="idcard">View my ID card</button>
+      <button class="btn secondary" id="toggleIdCardBtn">View my Digital ID</button>
       <button class="btn secondary" id="logoutBtn">Log out</button>
     </div>
+  </section>
+  <section class="section" id="accountIdCardSection" style="display:none;">
+    <div class="eyebrow">Digital ID</div>
+    ${p.idCard ? `<div class="idcard-stage">${idCardMarkup(p.idCard, state.currentUser)}</div>` : `<div class="banner warn">Your Digital ID is not available yet.</div>`}
   </section>
   <section class="section card" style="max-width:420px;">
     <h3 style="font-size:1.2rem; margin-bottom:10px;">Home state</h3>
@@ -1898,6 +2064,17 @@ function bindAccount(){
       bindMobileGate();
     }
     return;
+  }
+  const toggleIdBtn = document.getElementById('toggleIdCardBtn');
+  if(toggleIdBtn){
+    toggleIdBtn.addEventListener('click', ()=>{
+      const section = document.getElementById('accountIdCardSection');
+      if(!section) return;
+      const hidden = section.style.display === 'none';
+      section.style.display = hidden ? 'block' : 'none';
+      toggleIdBtn.textContent = hidden ? 'Hide my Digital ID' : 'View my Digital ID';
+      if(hidden) section.scrollIntoView({behavior:'smooth', block:'start'});
+    });
   }
   const logoutBtn = document.getElementById('logoutBtn');
   if(logoutBtn){
@@ -2314,7 +2491,7 @@ function viewBusinesses(){
   <section class="section">
     <div class="eyebrow">Redeem credits</div>
     <h1 style="font-size:2.2rem;">Spend where it counts</h1>
-    <p class="lede" style="margin-top:10px; max-width:600px;">These local businesses partner with CleanCred to turn your credits into real coupons.</p>
+    <p class="lede" style="margin-top:10px; max-width:600px;">These local businesses partner with CleanCred to turn your credits into real coupons. <strong>1 credit = ₹${CREDIT_CONFIG.creditValueINR}</strong> of stated store value.</p>
     ${p ? `<div class="banner ok" style="max-width:400px;">You have <strong>${p.credits} credits</strong> to spend.</div>` : `<div class="banner warn" style="max-width:420px;">Log in on the "My account" page to redeem credits.</div>`}
     <div class="bizgrid">
       ${state.businesses.map(b=>`
@@ -2384,6 +2561,59 @@ function bindPartner(){
     await saveData('partner-applications', true, state.partnerApps);
     out.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Thanks — application received.</strong> We'll reach out at ${esc(contact)} about listing your offer.</div>`;
     ['pName','pContact','pCat','pMsg'].forEach(id=>document.getElementById(id).value='');
+  });
+}
+
+/* ================= ADVERTISING ================= */
+function viewAds(){
+  return `
+  <section class="section wrap narrow" style="padding:0;">
+    <div class="eyebrow">For advertisers</div>
+    <h1 style="font-size:2.2rem;">Put your brand in front of CleanCred users</h1>
+    <p class="lede" style="margin-top:10px;">Register your business and tell us what you want to advertise. This preview records the request locally; it does not charge a real advertising fee or publish an ad automatically.</p>
+    <div class="card" style="margin-top:20px;">
+      <div class="field"><label for="adBusiness">Business / brand name</label><input id="adBusiness" placeholder="e.g. Coastal Cycles"></div>
+      <div class="field"><label for="adContact">Contact email</label><input id="adContact" type="email" placeholder="marketing@business.com"></div>
+      <div class="field"><label for="adWebsite">Website (optional)</label><input id="adWebsite" type="url" placeholder="https://example.com"></div>
+      <div class="field"><label for="adType">Ad placement</label>
+        <select id="adType">
+          <option value="homepage">Homepage banner</option>
+          <option value="watch">Watch & earn sponsor card</option>
+          <option value="leaderboard">Leaderboard sponsor</option>
+          <option value="sitewide">Site-wide banner</option>
+        </select>
+      </div>
+      <div class="field"><label for="adBudget">Monthly ad budget (₹)</label><input id="adBudget" type="number" min="1" step="1" placeholder="e.g. 5000"></div>
+      <div class="field"><label for="adMessage">Campaign details</label><textarea id="adMessage" rows="4" placeholder="What are you promoting, and who should see it?"></textarea></div>
+      <button class="btn signal block" id="adSubmitBtn">Register advertising request</button>
+      <p class="adnote">No payment is processed in this preview. A real production version should send this request to a server and take payment through a proper payment provider.</p>
+      <div id="adMsg"></div>
+    </div>
+  </section>
+  <section class="section">
+    <p class="hint">${state.adApps.length} advertising requests have been registered in this preview.</p>
+  </section>
+  `;
+}
+function bindAds(){
+  const btn = document.getElementById('adSubmitBtn');
+  if(!btn) return;
+  btn.addEventListener('click', async ()=>{
+    const business = document.getElementById('adBusiness').value.trim();
+    const contact = document.getElementById('adContact').value.trim();
+    const website = document.getElementById('adWebsite').value.trim();
+    const placement = document.getElementById('adType').value;
+    const budget = parseInt(document.getElementById('adBudget').value,10);
+    const message = document.getElementById('adMessage').value.trim();
+    const out = document.getElementById('adMsg');
+    if(!business || !contact || !budget || budget <= 0){
+      out.innerHTML = `<div class="banner err" style="margin-top:12px;">Business name, contact email and a valid monthly budget are required.</div>`;
+      return;
+    }
+    state.adApps.push({ business, contact, website, placement, budget, message, date:new Date().toISOString() });
+    await saveData('ad-applications', true, state.adApps);
+    out.innerHTML = `<div class="banner ok" style="margin-top:12px;"><strong>Advertising request received.</strong> We'll contact ${esc(contact)} about the ${esc(placement)} placement.</div>`;
+    ['adBusiness','adContact','adWebsite','adBudget','adMessage'].forEach(id=>document.getElementById(id).value='');
   });
 }
 
